@@ -1,0 +1,93 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --green: #1B3A2D;
+  --green-mid: #2a5a43;
+  --green-light: #3d7a5d;
+  --amber: #E08B20;
+  --amber-dark: #c07010;
+  --cream: #F8F4EE;
+  --cream-dark: #EDE8E0;
+  --text: #1a1a18;
+  --text-muted: #5a5a50;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--cream);
+  color: var(--text);
+}
+
+.grain-overlay { position: relative; }
+.grain-overlay::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 128px 128px;
+  pointer-events: none;
+  z-index: 1;
+  border-radius: inherit;
+}
+
+.btn-amber {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--amber);
+  color: #fff;
+  font-weight: 700;
+  padding: 14px 28px;
+  border-radius: 6px;
+  text-decoration: none;
+  transition: background 0.18s cubic-bezier(.4,0,.2,1), transform 0.12s cubic-bezier(.4,0,.2,1), box-shadow 0.18s;
+  box-shadow: 0 4px 16px rgba(224,139,32,0.25), 0 1px 4px rgba(224,139,32,0.15);
+  cursor: pointer;
+  border: none;
+  font-size: 1rem;
+}
+.btn-amber:hover {
+  background: var(--amber-dark);
+  transform: translateY(-1px);
+  box-shadow: 0 8px 24px rgba(224,139,32,0.3), 0 2px 8px rgba(224,139,32,0.2);
+}
+.btn-amber:active { transform: translateY(0); }
+.btn-amber:focus-visible { outline: 3px solid var(--amber); outline-offset: 3px; }
+.btn-amber:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+.btn-outline {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  color: #fff;
+  font-weight: 600;
+  padding: 13px 27px;
+  border-radius: 6px;
+  border: 1.5px solid rgba(255,255,255,0.5);
+  text-decoration: none;
+  transition: border-color 0.18s, background 0.18s, transform 0.12s;
+  cursor: pointer;
+  font-size: 1rem;
+}
+.btn-outline:hover {
+  border-color: #fff;
+  background: rgba(255,255,255,0.08);
+  transform: translateY(-1px);
+}
+.btn-outline:focus-visible { outline: 3px solid rgba(255,255,255,0.6); outline-offset: 3px; }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-up { animation: fadeUp 0.6s cubic-bezier(.4,0,.2,1) both; }
+.delay-100 { animation-delay: 0.1s; }
+.delay-200 { animation-delay: 0.2s; }
+.delay-300 { animation-delay: 0.3s; }
+.delay-400 { animation-delay: 0.4s; }
+.delay-500 { animation-delay: 0.5s; }
