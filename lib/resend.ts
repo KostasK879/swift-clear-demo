@@ -2,9 +2,8 @@ import { Resend } from 'resend'
 import type { Booking } from '@/types'
 import { serviceSummary, formatPrice } from './pricing'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
-
 export async function sendConfirmationEmail(booking: Booking) {
+  const resend = new Resend(process.env.RESEND_API_KEY)
   const summary = serviceSummary(booking.service_details)
   const price = formatPrice(booking.price)
 
