@@ -2,6 +2,13 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { sendConfirmationEmail } from '@/lib/resend'
 import type { Booking } from '@/types'
+import {
+  demoForced,
+  demoInsertBooking,
+  demoListBookings,
+  isSupabaseConfigured,
+} from '@/lib/demo-store'
+import { calculatePrice } from '@/lib/pricing'
 
 function serverSupabase() {
   return createClient(
@@ -10,36 +17,76 @@ function serverSupabase() {
   )
 }
 
+function shouldUseDemo(): boolean {
+  return demoForced() || !isSupabaseConfigured()
+}
+
 export async function POST(req: NextRequest) {
   const body = await req.json()
-  const supabase = serverSupabase()
 
-  const { data, error } = await supabase
-    .from('bookings')
-    .insert([body])
-    .select()
-    .single()
-
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+  // Never trust client-supplied price in a public demo.
+  let price = body.price
+  try {
+    if (body.service_details) {
+      price = calculatePrice(body.service_details)
+    }
+  } catch {
+    // keep body.price if pricing throws
   }
 
-  await sendConfirmationEmail(data as Booking)
+  const payload = { ...body, price }
 
-  return NextResponse.json({ booking: data }, { status: 201 })
+  if (shouldUseDemo()) {
+    const booking = demoInsertBooking(payload)
+    try {
+      await sendConfirmationEmail(booking)
+    } catch {
+      // non-fatal in demo
+    }
+    return NextResponse.json({ booking, demo: true }, { status: 201 })
+  }
+
+  try {
+    const supabase = serverSupabase()
+    const { data, error } = await supabase
+      .from('bookings')
+      .insert([payload])
+      .select()
+      .single()
+
+    if (error) {
+      const booking = demoInsertBooking(payload)
+      return NextResponse.json({ booking, demo: true, warning: error.message }, { status: 201 })
+    }
+
+    await sendConfirmationEmail(data as Booking)
+    return NextResponse.json({ booking: data }, { status: 201 })
+  } catch (err) {
+    const booking = demoInsertBooking(payload)
+    const message = err instanceof Error ? err.message : 'supabase unreachable'
+    return NextResponse.json({ booking, demo: true, warning: message }, { status: 201 })
+  }
 }
 
 export async function GET() {
-  const supabase = serverSupabase()
-
-  const { data, error } = await supabase
-    .from('bookings')
-    .select('*')
-    .order('date', { ascending: false })
-
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+  if (shouldUseDemo()) {
+    return NextResponse.json({ bookings: demoListBookings(), demo: true })
   }
 
-  return NextResponse.json({ bookings: data })
+  try {
+    const supabase = serverSupabase()
+    const { data, error } = await supabase
+      .from('bookings')
+      .select('*')
+      .order('date', { ascending: false })
+
+    if (error) {
+      return NextResponse.json({ bookings: demoListBookings(), demo: true, warning: error.message })
+    }
+
+    return NextResponse.json({ bookings: data })
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'supabase unreachable'
+    return NextResponse.json({ bookings: demoListBookings(), demo: true, warning: message })
+  }
 }
