@@ -1,19 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
 import {
   demoForced,
   demoInsertBlocked,
   demoListBlocked,
   isSupabaseConfigured,
 } from '@/lib/demo-store'
+import {
+  SERVICE_ROLE_MISSING,
+  adminServerClient,
+  anonServerClient,
+  hasServiceRoleKey,
+} from '@/lib/supabase-server'
 import type { TimeSlot } from '@/types'
 
-function serverSupabase() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  )
-}
+// Admin only (HTTP Basic Auth in middleware.ts). Writes use the service role key.
 
 function shouldUseDemo(): boolean {
   return demoForced() || !isSupabaseConfigured()
@@ -25,7 +25,7 @@ export async function GET() {
   }
 
   try {
-    const supabase = serverSupabase()
+    const supabase = hasServiceRoleKey() ? adminServerClient() : anonServerClient()
     const { data, error } = await supabase
       .from('blocked_slots')
       .select('*')
@@ -49,8 +49,12 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ blocked_slot, demo: true }, { status: 201 })
   }
 
+  if (!hasServiceRoleKey()) {
+    return NextResponse.json({ error: SERVICE_ROLE_MISSING }, { status: 503 })
+  }
+
   try {
-    const supabase = serverSupabase()
+    const supabase = adminServerClient()
     const { data, error } = await supabase
       .from('blocked_slots')
       .insert([{ date, time_slot }])

@@ -13,6 +13,7 @@ export default function AdminPage() {
   const [blockDate, setBlockDate] = useState('')
   const [blockSlot, setBlockSlot] = useState<TimeSlot>('8am')
   const [blocking, setBlocking] = useState(false)
+  const [loadError, setLoadError] = useState<string | null>(null)
   const [sortCol, setSortCol] = useState<'date' | 'created_at' | 'price'>('date')
 
   const load = useCallback(async () => {
@@ -23,6 +24,7 @@ export default function AdminPage() {
     ])
     const [bData, bsData] = await Promise.all([bRes.json(), bsRes.json()])
     setBookings(bData.bookings ?? [])
+    setLoadError(bData.error ?? null)
     setBlockedSlots(bsData.blocked_slots ?? [])
     setLoading(false)
   }, [])
@@ -85,6 +87,13 @@ export default function AdminPage() {
           <a href="/" className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>← View site</a>
         </div>
       </header>
+      {loadError && (
+        <div className="max-w-7xl mx-auto px-6 mt-4">
+          <div style={{ background: 'rgba(224,139,32,0.12)', border: '1px solid rgba(224,139,32,0.4)', color: '#E08B20', borderRadius: 8, padding: '10px 14px', fontSize: 14 }}>
+            Bookings could not be loaded: {loadError}
+          </div>
+        </div>
+      )}
 
       <div className="max-w-7xl mx-auto px-6 py-8">
         {/* Stats */}

@@ -23,8 +23,23 @@ create table if not exists blocked_slots (
 alter table bookings enable row level security;
 alter table blocked_slots enable row level security;
 
-create policy "anon read bookings"     on bookings      for select using (true);
+-- Public (anon / publishable key):
+--   * may create bookings, but can NOT read them back (customer PII stays private)
+--   * may read blocked_slots (needed for availability)
+-- Admin reads/writes go through server routes using SUPABASE_SERVICE_ROLE_KEY,
+-- which bypasses RLS. Never expose that key to the browser.
 create policy "anon insert bookings"   on bookings      for insert with check (true);
 create policy "anon read blocked"      on blocked_slots for select using (true);
-create policy "anon insert blocked"    on blocked_slots for insert with check (true);
-create policy "anon delete blocked"    on blocked_slots for delete using (true);
+
+-- Availability: expose only date + time_slot of bookings (no personal data).
+-- security_invoker = false so it runs as the owner (postgres) and is not blocked by RLS.
+create or replace view public.booked_slots with (security_invoker = false) as
+  select date, time_slot from public.bookings;
+alter view public.booked_slots owner to postgres;
+revoke all on public.booked_slots from anon, authenticated;
+grant select on public.booked_slots to anon, authenticated;
+
+-- Upgrading an older install? Drop the old wide-open policies:
+-- drop policy if exists "anon read bookings"  on bookings;
+-- drop policy if exists "anon insert blocked" on blocked_slots;
+-- drop policy if exists "anon delete blocked" on blocked_slots;

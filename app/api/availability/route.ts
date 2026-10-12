@@ -1,18 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
+import { anonServerClient } from '@/lib/supabase-server'
 import { TIME_SLOTS } from '@/types'
 import {
   demoForced,
   demoTakenSlots,
   isSupabaseConfigured,
 } from '@/lib/demo-store'
-
-function serverSupabase() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  )
-}
 
 function shouldUseDemo(): boolean {
   return demoForced() || !isSupabaseConfigured()
@@ -34,9 +27,10 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const supabase = serverSupabase()
+    const supabase = anonServerClient()
     const [bookingsRes, blockedRes] = await Promise.all([
-      supabase.from('bookings').select('time_slot').eq('date', date),
+      // booked_slots view exposes only date + time_slot (no personal data)
+      supabase.from('booked_slots').select('time_slot').eq('date', date),
       supabase.from('blocked_slots').select('time_slot').eq('date', date),
     ])
 

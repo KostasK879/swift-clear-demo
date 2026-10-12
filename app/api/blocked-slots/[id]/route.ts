@@ -1,17 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
 import {
   demoDeleteBlocked,
   demoForced,
   isSupabaseConfigured,
 } from '@/lib/demo-store'
+import {
+  SERVICE_ROLE_MISSING,
+  adminServerClient,
+  hasServiceRoleKey,
+} from '@/lib/supabase-server'
 
-function serverSupabase() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  )
-}
+// Admin only (HTTP Basic Auth in middleware.ts). Writes use the service role key.
 
 function shouldUseDemo(): boolean {
   return demoForced() || !isSupabaseConfigured()
@@ -27,8 +26,12 @@ export async function DELETE(
     return NextResponse.json({ success: true, demo: true })
   }
 
+  if (!hasServiceRoleKey()) {
+    return NextResponse.json({ error: SERVICE_ROLE_MISSING }, { status: 503 })
+  }
+
   try {
-    const supabase = serverSupabase()
+    const supabase = adminServerClient()
     const { error } = await supabase
       .from('blocked_slots')
       .delete()

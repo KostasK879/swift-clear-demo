@@ -11,6 +11,17 @@ Set these environment variables locally (`.env.local`) and in Vercel (Project > 
 If `ADMIN_PASSWORD` is not set, the admin area returns 503 and stays locked. The public quote flow
 (`/quote`, `POST /api/bookings`, `GET /api/availability`) needs no login.
 
+## Supabase keys
+
+- `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`: the public (publishable/anon) key. Under RLS it can only
+  insert bookings, read the `booked_slots` view (date + time only) and read `blocked_slots`. It can't read customer details.
+- `SUPABASE_SERVICE_ROLE_KEY` (**server-only**, never `NEXT_PUBLIC_`): the service_role / secret key from Supabase
+  (Project Settings > API Keys). Used only by the Basic-Auth-protected admin routes (`GET /api/bookings`,
+  `POST/DELETE /api/blocked-slots`). In Vercel add it for Production (and Preview if wanted) as a Sensitive variable.
+  If it is missing, those admin routes return `503 {"error":"SUPABASE_SERVICE_ROLE_KEY not configured"}`; customers can still book.
+
+See `supabase/schema.sql` for the tables, RLS policies and the `booked_slots` view.
+
 ## Getting Started
 
 First, run the development server:
