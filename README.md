@@ -1,5 +1,16 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## Admin access
+
+`/admin`, `GET /api/bookings` and all of `/api/blocked-slots` are protected with HTTP Basic Auth (see `middleware.ts`).
+Set these environment variables locally (`.env.local`) and in Vercel (Project > Settings > Environment Variables):
+
+- `ADMIN_USER` (optional, defaults to `admin`)
+- `ADMIN_PASSWORD` (required)
+
+If `ADMIN_PASSWORD` is not set, the admin area returns 503 and stays locked. The public quote flow
+(`/quote`, `POST /api/bookings`, `GET /api/availability`) needs no login.
+
 ## Getting Started
 
 First, run the development server:
