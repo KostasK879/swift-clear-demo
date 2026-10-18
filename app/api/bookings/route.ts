@@ -51,12 +51,13 @@ export async function POST(req: NextRequest) {
 
   if (shouldUseDemo()) {
     const demoBooking = demoInsertBooking(booking)
+    let emailSent = false
     try {
-      await sendConfirmationEmail(demoBooking)
-    } catch {
-      // non-fatal in demo
+      emailSent = await sendConfirmationEmail(demoBooking)
+    } catch (err) {
+      console.error('Confirmation email failed (demo mode):', err)
     }
-    return NextResponse.json({ booking: demoBooking, demo: true }, { status: 201 })
+    return NextResponse.json({ booking: demoBooking, demo: true, emailSent }, { status: 201 })
   }
 
   try {
@@ -68,12 +69,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ booking: demoBooking, demo: true, warning: error.message }, { status: 201 })
     }
 
+    let emailSent = false
     try {
-      await sendConfirmationEmail(booking)
-    } catch {
-      // booking is saved; email failure is non-fatal
+      emailSent = await sendConfirmationEmail(booking)
+    } catch (err) {
+      console.error('Confirmation email failed (booking saved):', err)
     }
-    return NextResponse.json({ booking }, { status: 201 })
+    return NextResponse.json({ booking, emailSent }, { status: 201 })
   } catch (err) {
     const demoBooking = demoInsertBooking(booking)
     const message = err instanceof Error ? err.message : 'supabase unreachable'
