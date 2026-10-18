@@ -2,8 +2,12 @@ import { Resend } from 'resend'
 import type { Booking } from '@/types'
 import { serviceSummary, formatPrice } from './pricing'
 
-export async function sendConfirmationEmail(booking: Booking) {
-  const resend = new Resend(process.env.RESEND_API_KEY)
+export async function sendConfirmationEmail(booking: Booking): Promise<boolean> {
+  const apiKey = process.env.RESEND_API_KEY
+  if (!apiKey) {
+    console.error('Resend: RESEND_API_KEY is missing; confirmation email not sent')
+    return false
+  }
   const summary = serviceSummary(booking.service_details)
   const price = formatPrice(booking.price)
 
@@ -31,13 +35,20 @@ export async function sendConfirmationEmail(booking: Booking) {
   `
 
   try {
-    await resend.emails.send({
-      from: 'Swift Clear <bookings@swiftclear.co.uk>',
+    const resend = new Resend(apiKey)
+    const { error } = await resend.emails.send({
+      from: process.env.RESEND_FROM || 'Swift Clear <bookings@nodusai.io>',
       to: booking.email,
       subject: `Booking Confirmed — ${booking.date} at ${booking.time_slot}`,
       html,
     })
+    if (error) {
+      console.error('Resend send failed:', error)
+      return false
+    }
+    return true
   } catch (err) {
     console.error('Resend email error (non-fatal):', err)
+    return false
   }
 }
