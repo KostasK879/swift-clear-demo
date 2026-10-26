@@ -9,7 +9,11 @@ const GREEN = '#1B3A2D'
 const AMBER = '#E08B20'
 const CREAM = '#F8F4EE'
 
-export default function VoiceWidget() {
+// Clearbot's open panel is a fixed 370px column. Below this width there isn't
+// room to park Ellie beside it, so the voice UI yields while chat is open.
+const BESIDE_CHAT_MQ = '(min-width: 800px)'
+
+export default function VoiceWidget({ chatOpen = false }: { chatOpen?: boolean }) {
   const vapiRef = useRef<Vapi | null>(null)
   const [cfg, setCfg] = useState<WebConfig | null>(null)
   const [cfgError, setCfgError] = useState<string | null>(null)
@@ -20,6 +24,7 @@ export default function VoiceWidget() {
   const [error, setError] = useState<string | null>(null)
   const [lines, setLines] = useState<Line[]>([])
   const [narrow, setNarrow] = useState(false)
+  const [wide, setWide] = useState(false)
   const endRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -52,6 +57,14 @@ export default function VoiceWidget() {
   useEffect(() => {
     const mq = window.matchMedia('(max-width: 480px)')
     const apply = () => setNarrow(mq.matches)
+    apply()
+    mq.addEventListener('change', apply)
+    return () => mq.removeEventListener('change', apply)
+  }, [])
+
+  useEffect(() => {
+    const mq = window.matchMedia(BESIDE_CHAT_MQ)
+    const apply = () => setWide(mq.matches)
     apply()
     mq.addEventListener('change', apply)
     return () => mq.removeEventListener('change', apply)
@@ -147,6 +160,13 @@ export default function VoiceWidget() {
     setOpen(false)
   }
 
+  const besideChat = wide && chatOpen
+  const conceal = chatOpen && !wide
+
+  useEffect(() => {
+    if (conceal && !connected) setOpen(false)
+  }, [conceal, connected])
+
   const statusLabel = connected
     ? speaking
       ? 'Ellie is speaking…'
@@ -155,9 +175,11 @@ export default function VoiceWidget() {
       ? 'Connecting…'
       : 'Ready when you are'
 
-  // Stack above Clearbot FAB (56px) + gap; respect iOS safe area
+  // Stack above Clearbot FAB (56px) + gap; respect iOS safe area.
+  // While the chat panel is open on a wide screen, step left of that 370px column.
   const bottom = 'calc(16px + 56px + 12px + env(safe-area-inset-bottom, 0px))'
   const edge = 'max(16px, env(safe-area-inset-right))'
+  const right = besideChat ? `calc(${edge} + 370px + 16px)` : edge
 
   const micIcon = (
     <svg
@@ -178,14 +200,43 @@ export default function VoiceWidget() {
   )
 
   return (
+    <>
+      {conceal && connected && (
+        <button
+          type="button"
+          onClick={endCall}
+          aria-label="End call with Ellie"
+          style={{
+            position: 'fixed',
+            left: 'max(16px, env(safe-area-inset-left))',
+            bottom: 'max(16px, env(safe-area-inset-bottom))',
+            zIndex: 120,
+            height: 56,
+            padding: '0 18px',
+            borderRadius: 999,
+            border: 0,
+            background: '#dc2626',
+            color: '#fff',
+            fontWeight: 700,
+            fontSize: 14,
+            cursor: 'pointer',
+            boxShadow: '0 8px 24px rgba(220,38,38,.45)',
+            fontFamily: 'var(--font-dm-sans), system-ui, sans-serif',
+          }}
+        >
+          End call
+        </button>
+      )}
     <div
+      className="sc-voice-root"
+      aria-hidden={conceal ? true : undefined}
       style={{
         position: 'fixed',
-        right: edge,
+        right,
         bottom,
         zIndex: 110,
         fontFamily: 'var(--font-dm-sans), system-ui, sans-serif',
-        display: 'flex',
+        display: conceal ? 'none' : 'flex',
         flexDirection: 'column',
         alignItems: 'flex-end',
         gap: 12,
@@ -520,5 +571,6 @@ export default function VoiceWidget() {
         @keyframes elliePulseRing{0%{box-shadow:0 0 0 0 rgba(27,58,45,.5)}70%{box-shadow:0 0 0 16px rgba(27,58,45,0)}100%{box-shadow:0 0 0 0 rgba(27,58,45,0)}}
       `}</style>
     </div>
+    </>
   )
 }
