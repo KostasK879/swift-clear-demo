@@ -1,0 +1,388 @@
+{
+  "name": "Swift Clear Receptionist",
+  "firstMessage": "Hi, thanks for calling Swift Clear, this is Ellie, the AI assistant. Are you looking to get something cleared?",
+  "firstMessageMode": "assistant-speaks-first",
+  "transcriber": {
+    "provider": "deepgram",
+    "model": "nova-2",
+    "language": "en-GB",
+    "keywords": [
+      "Swift:2",
+      "Clear:1"
+    ]
+  },
+  "model": {
+    "provider": "openai",
+    "model": "gpt-4o",
+    "temperature": 0.4,
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are Ellie, the friendly phone receptionist for Swift Clear, a licensed London waste removal company (Waste Carrier Licence, fully insured, same-day and next-day collections across London, everything recycled where possible).\n\nSTYLE\n- Warm, upbeat, British. Short sentences: one or two at a time, then let the caller talk. Never read lists longer than three items.\n- Use British spelling and phrasing (\"brilliant\", \"lovely\", \"no problem at all\").\n- Prices are in pounds, said naturally (\"seventy pounds\").\n- You are an AI. In your first line you already said so. If asked again (\"are you a real person?\", \"are you AI?\"), answer honestly in one short sentence, then offer: \"Happy to keep helping, or I can put you through to someone on the team \u2014 which would you prefer?\" If they want a person, use transferCall immediately in the same turn.\n\nWHAT WE TAKE\n- Furniture: sofa or armchair \u00a370, bed frame \u00a370, wardrobe \u00a380, table \u00a350, dining chair \u00a340, mattress \u00a365, desk \u00a350, other items about \u00a350 each.\n- Garden waste (loads): small \u00a350, half \u00a3100, full \u00a3180.\n- Builders' rubble (loads): small \u00a3100, half \u00a3180, full \u00a3300.\n- General junk / house or office clearance (loads): small \u00a360, half \u00a3120, full \u00a3200. A small load is about a quarter of a van.\n- Appliances: fridge or fridge-freezer \u00a370, washing machine \u00a365, dishwasher \u00a360, oven or cooker \u00a355, tumble dryer \u00a365, freezer \u00a365.\nPrices include labour, loading, disposal and VAT. Always confirm a price with the get_price tool before quoting a final figure.\n\nWHAT WE DON'T TAKE\n- Asbestos, chemicals, paint tins with liquid paint, oil, gas bottles, clinical or medical waste, fuel, batteries in bulk, or anything hazardous. Politely explain we can't take it and suggest they contact their local council's hazardous waste service. Never book a job that includes these.\n\nBOOKING FLOW\n1. Find out what they need cleared and roughly how much. Map it to a category: furniture, garden, rubble, junk or appliances.\n2. Call get_price and tell them the price.\n3. Ask which day suits. Convert it to YYYY-MM-DD (today's date is {{\"now\" | date: \"%Y-%m-%d\", \"Europe/London\"}}). Call check_availability and offer the free arrival slots (8am, 10am, 12pm, 2pm, 4pm; each a two-hour arrival window).\n4. Collect: full name, best contact number (read it back digit by digit), first line of address and postcode (read the postcode back using the phonetic alphabet if unclear). Email is optional, only for a confirmation email.\n5. Recap everything in one sentence and ask \"Shall I book that in?\". Only after a clear yes, call create_booking.\n6. Right after a successful booking, call send_sms with their number and a short confirmation (reference, date, slot, address, price). Then tell them you've texted it over.\n7. Give them the booking reference aloud, thank them, ask if there's anything else, then say goodbye and end the call.\n\nTRANSFER TO A HUMAN\n- If the caller asks for a person, a manager, \"someone real\", or prefers a human after the AI disclosure, say a brief \"Of course \u2014 putting you through now\" and invoke transferCall in the same response. Do not keep chatting instead of transferring.\n- For complaints, cancellations, commercial contracts or anything you can't help with: offer to transfer, or take their name and number and say a teammate will call back today.\n\nRULES\n- Never invent prices, slots or references; use the tools.\n- If a tool returns an error, apologise briefly and follow its guidance (e.g. offer another slot).\n- For mixed jobs (e.g. a sofa plus garden waste), quote each part and book the main category; mention the team will confirm the rest on the day.\n- Keep calls under five minutes. When the caller is done, say a friendly goodbye and end the call."
+      }
+    ],
+    "tools": [
+      {
+        "type": "function",
+        "async": false,
+        "function": {
+          "name": "get_price",
+          "description": "Get the exact Swift Clear price for a job.",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "category": {
+                "type": "string",
+                "enum": [
+                  "furniture",
+                  "garden",
+                  "rubble",
+                  "junk",
+                  "appliances"
+                ],
+                "description": "Type of waste."
+              },
+              "items": {
+                "type": "array",
+                "description": "Furniture only.",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "enum": [
+                        "sofa",
+                        "bed",
+                        "wardrobe",
+                        "table",
+                        "chair",
+                        "mattress",
+                        "desk",
+                        "other"
+                      ]
+                    },
+                    "quantity": {
+                      "type": "integer",
+                      "minimum": 1
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "quantity"
+                  ]
+                }
+              },
+              "loadSize": {
+                "type": "string",
+                "enum": [
+                  "small",
+                  "half",
+                  "full"
+                ],
+                "description": "Garden, rubble or junk only."
+              },
+              "appliances": {
+                "type": "array",
+                "description": "Appliances only, one entry per appliance.",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "fridge",
+                    "washing_machine",
+                    "dishwasher",
+                    "oven",
+                    "tumble_dryer",
+                    "freezer",
+                    "other"
+                  ]
+                }
+              }
+            },
+            "required": [
+              "category"
+            ]
+          }
+        },
+        "server": {
+          "url": "{{SERVER_URL}}/api/vapi",
+          "headers": {
+            "x-vapi-secret": "{{VAPI_SECRET}}"
+          }
+        },
+        "messages": [
+          {
+            "type": "request-start",
+            "content": "Let me just work that out for you.",
+            "blocking": false
+          },
+          {
+            "type": "request-failed",
+            "content": "Sorry, my system's being a bit slow. Bear with me one moment."
+          }
+        ]
+      },
+      {
+        "type": "function",
+        "async": false,
+        "function": {
+          "name": "check_availability",
+          "description": "List free arrival slots on a date.",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "date": {
+                "type": "string",
+                "description": "YYYY-MM-DD"
+              }
+            },
+            "required": [
+              "date"
+            ]
+          }
+        },
+        "server": {
+          "url": "{{SERVER_URL}}/api/vapi",
+          "headers": {
+            "x-vapi-secret": "{{VAPI_SECRET}}"
+          }
+        },
+        "messages": [
+          {
+            "type": "request-start",
+            "content": "Let me check the diary.",
+            "blocking": false
+          },
+          {
+            "type": "request-failed",
+            "content": "Sorry, my system's being a bit slow. Bear with me one moment."
+          }
+        ]
+      },
+      {
+        "type": "function",
+        "async": false,
+        "function": {
+          "name": "create_booking",
+          "description": "Book the collection after the caller has confirmed all details.",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "phone": {
+                "type": "string",
+                "description": "UK phone number."
+              },
+              "email": {
+                "type": "string",
+                "description": "Optional, for a confirmation email."
+              },
+              "address": {
+                "type": "string",
+                "description": "First line of address."
+              },
+              "postcode": {
+                "type": "string"
+              },
+              "date": {
+                "type": "string",
+                "description": "YYYY-MM-DD"
+              },
+              "slot": {
+                "type": "string",
+                "enum": [
+                  "8am",
+                  "10am",
+                  "12pm",
+                  "2pm",
+                  "4pm"
+                ]
+              },
+              "category": {
+                "type": "string",
+                "enum": [
+                  "furniture",
+                  "garden",
+                  "rubble",
+                  "junk",
+                  "appliances"
+                ],
+                "description": "Type of waste."
+              },
+              "items": {
+                "type": "array",
+                "description": "Furniture only.",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "enum": [
+                        "sofa",
+                        "bed",
+                        "wardrobe",
+                        "table",
+                        "chair",
+                        "mattress",
+                        "desk",
+                        "other"
+                      ]
+                    },
+                    "quantity": {
+                      "type": "integer",
+                      "minimum": 1
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "quantity"
+                  ]
+                }
+              },
+              "loadSize": {
+                "type": "string",
+                "enum": [
+                  "small",
+                  "half",
+                  "full"
+                ],
+                "description": "Garden, rubble or junk only."
+              },
+              "appliances": {
+                "type": "array",
+                "description": "Appliances only, one entry per appliance.",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "fridge",
+                    "washing_machine",
+                    "dishwasher",
+                    "oven",
+                    "tumble_dryer",
+                    "freezer",
+                    "other"
+                  ]
+                }
+              }
+            },
+            "required": [
+              "name",
+              "phone",
+              "address",
+              "postcode",
+              "date",
+              "slot",
+              "category"
+            ]
+          }
+        },
+        "server": {
+          "url": "{{SERVER_URL}}/api/vapi",
+          "headers": {
+            "x-vapi-secret": "{{VAPI_SECRET}}"
+          }
+        },
+        "messages": [
+          {
+            "type": "request-start",
+            "content": "Lovely, booking that in now.",
+            "blocking": false
+          },
+          {
+            "type": "request-failed",
+            "content": "Sorry, my system's being a bit slow. Bear with me one moment."
+          }
+        ]
+      },
+      {
+        "type": "function",
+        "async": false,
+        "function": {
+          "name": "send_sms",
+          "description": "Text the caller a short booking confirmation mid-call (reference, date, slot, address, price). Call this right after create_booking succeeds.",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "to": {
+                "type": "string",
+                "description": "Caller phone number (UK or E.164)."
+              },
+              "message": {
+                "type": "string",
+                "description": "SMS body under 320 chars, e.g. 'Swift Clear: booked Fri 10am at 12 High St E1 6AN, \u00a3140. Ref A1B2C3D4. Reply STOP to opt out.'"
+              }
+            },
+            "required": [
+              "to",
+              "message"
+            ]
+          }
+        },
+        "server": {
+          "url": "{{SERVER_URL}}/api/vapi",
+          "headers": {
+            "x-vapi-secret": "{{VAPI_SECRET}}"
+          }
+        },
+        "messages": [
+          {
+            "type": "request-start",
+            "content": "I'll text that confirmation over now.",
+            "blocking": false
+          },
+          {
+            "type": "request-failed",
+            "content": "The text's being a bit slow \u2014 your booking's still confirmed though."
+          }
+        ]
+      },
+      {
+        "type": "transferCall",
+        "destinations": [
+          {
+            "type": "number",
+            "number": "{{HUMAN_TRANSFER_NUMBER}}",
+            "description": "A human on the Swift Clear team. Use when the caller asks for a person, a manager, or prefers a human after AI disclosure.",
+            "message": "Of course \u2014 putting you through to someone on the team now."
+          }
+        ]
+      },
+      {
+        "type": "endCall"
+      }
+    ]
+  },
+  "voice": {
+    "provider": "11labs",
+    "model": "eleven_flash_v2_5",
+    "voiceId": "{{ELEVENLABS_VOICE_ID}}",
+    "stability": 0.45,
+    "similarityBoost": 0.8,
+    "style": 0.15,
+    "optimizeStreamingLatency": 2
+  },
+  "endCallMessage": "Thanks for calling Swift Clear. Have a lovely day!",
+  "endCallPhrases": [
+    "have a lovely day",
+    "goodbye for now"
+  ],
+  "voicemailMessage": "Hi, it's Swift Clear returning your call. Give us a ring back whenever suits. Thanks!",
+  "maxDurationSeconds": 600,
+  "backgroundSound": "office",
+  "serverMessages": [
+    "tool-calls",
+    "end-of-call-report"
+  ],
+  "server": {
+    "url": "{{SERVER_URL}}/api/vapi",
+    "headers": {
+      "x-vapi-secret": "{{VAPI_SECRET}}"
+    }
+  },
+  "metadata": {
+    "brand": "swift-clear",
+    "builtBy": "Nodus AI",
+    "voice": "elevenlabs-lily-british"
+  }
+}

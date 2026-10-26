@@ -14,11 +14,23 @@
   --text-muted: #5a5a50;
 }
 
-html { scroll-behavior: smooth; }
+html {
+  scroll-behavior: smooth;
+  overflow-x: clip;
+  -webkit-text-size-adjust: 100%;
+}
 
 body {
   background: var(--cream);
   color: var(--text);
+  overflow-x: clip;
+  /* Room for stacked Ellie + Clearbot FABs on phones */
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+img, svg, video, canvas {
+  max-width: 100%;
+  height: auto;
 }
 
 .grain-overlay { position: relative; }
@@ -37,6 +49,7 @@ body {
 .btn-amber {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
   background: var(--amber);
   color: #fff;
@@ -49,6 +62,8 @@ body {
   cursor: pointer;
   border: none;
   font-size: 1rem;
+  min-height: 44px;
+  text-align: center;
 }
 .btn-amber:hover {
   background: var(--amber-dark);
@@ -62,6 +77,7 @@ body {
 .btn-outline {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
   background: transparent;
   color: #fff;
@@ -73,6 +89,8 @@ body {
   transition: border-color 0.18s, background 0.18s, transform 0.12s;
   cursor: pointer;
   font-size: 1rem;
+  min-height: 44px;
+  text-align: center;
 }
 .btn-outline:hover {
   border-color: #fff;
@@ -80,6 +98,16 @@ body {
   transform: translateY(-1px);
 }
 .btn-outline:focus-visible { outline: 3px solid rgba(255,255,255,0.6); outline-offset: 3px; }
+
+/* Keep page content clear of floating FABs */
+.sc-fab-pad {
+  padding-bottom: calc(140px + env(safe-area-inset-bottom, 0px));
+}
+@media (min-width: 481px) {
+  .sc-fab-pad {
+    padding-bottom: calc(120px + env(safe-area-inset-bottom, 0px));
+  }
+}
 
 @keyframes fadeUp {
   from { opacity: 0; transform: translateY(20px); }

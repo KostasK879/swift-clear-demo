@@ -1,7 +1,8 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Fraunces, DM_Sans } from 'next/font/google'
 import './globals.css'
 import ChatWidget from '@/components/ChatWidget'
+import VoiceWidget from '@/components/VoiceWidget'
 
 const fraunces = Fraunces({
   subsets: ['latin'],
@@ -20,10 +21,21 @@ export const metadata: Metadata = {
   description: 'Fast, reliable waste removal across London. Furniture, garden waste, rubble, junk, and appliances. Get an instant quote and book online.',
 }
 
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
+  themeColor: '#1B3A2D',
+}
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${fraunces.variable} ${dmSans.variable}`}>
-      <body className="antialiased">{children}<ChatWidget /></body>
+      <body className="antialiased">
+        {children}
+        <ChatWidget />
+        <VoiceWidget />
+      </body>
     </html>
   )
 }

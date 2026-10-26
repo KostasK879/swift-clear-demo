@@ -2,7 +2,7 @@ import Link from 'next/link'
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen" style={{ background: 'var(--cream)', fontFamily: 'var(--font-dm-sans)' }}>
+    <div className="min-h-screen sc-fab-pad" style={{ background: 'var(--cream)', fontFamily: 'var(--font-dm-sans)' }}>
       <Nav />
       <Hero />
       <Services />
@@ -18,7 +18,7 @@ export default function HomePage() {
 function Nav() {
   return (
     <header style={{ background: 'var(--green)' }} className="sticky top-0 z-50 shadow-lg">
-      <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: 'var(--amber)' }}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -48,25 +48,25 @@ function Hero() {
         <div className="absolute" style={{ width: '400px', height: '400px', bottom: '-100px', left: '10%', background: 'radial-gradient(circle, rgba(224,139,32,0.12) 0%, transparent 70%)', borderRadius: '50%' }} />
       </div>
 
-      <div className="relative max-w-6xl mx-auto px-6 py-24 md:py-32 flex flex-col md:flex-row items-center gap-12" style={{ zIndex: 2 }}>
+      <div className="relative max-w-6xl mx-auto px-4 sm:px-6 py-16 sm:py-24 md:py-32 flex flex-col md:flex-row items-center gap-10 md:gap-12" style={{ zIndex: 2 }}>
         <div className="flex-1 text-center md:text-left">
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold mb-6 animate-fade-up" style={{ background: 'rgba(224,139,32,0.2)', color: 'var(--amber)', border: '1px solid rgba(224,139,32,0.3)' }}>
             <span className="w-1.5 h-1.5 rounded-full bg-amber-400 inline-block animate-pulse" />
             Same-day collection available across London
           </div>
-          <h1 className="font-display text-4xl md:text-6xl font-bold text-white leading-tight tracking-tight mb-5 animate-fade-up delay-100" style={{ letterSpacing: '-0.03em', lineHeight: '1.1' }}>
+          <h1 className="font-display text-3xl sm:text-4xl md:text-6xl font-bold text-white leading-tight tracking-tight mb-5 animate-fade-up delay-100" style={{ letterSpacing: '-0.03em', lineHeight: '1.1' }}>
             London&apos;s fastest<br />
             <span style={{ color: 'var(--amber)' }}>waste removal</span><br />
             service
           </h1>
-          <p className="text-lg text-white/70 mb-8 max-w-lg animate-fade-up delay-200" style={{ lineHeight: '1.7' }}>
+          <p className="text-base sm:text-lg text-white/70 mb-8 max-w-lg mx-auto md:mx-0 animate-fade-up delay-200" style={{ lineHeight: '1.7' }}>
             Furniture, garden waste, construction rubble, junk, and appliances — cleared fast, responsibly, and at a fair price.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start animate-fade-up delay-300">
-            <Link href="/quote" className="btn-amber">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center md:justify-start w-full sm:w-auto animate-fade-up delay-300">
+            <Link href="/quote" className="btn-amber w-full sm:w-auto">
               Get a Free Quote →
             </Link>
-            <a href="tel:02079460000" className="btn-outline">
+            <a href="tel:02079460000" className="btn-outline w-full sm:w-auto">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.82a19.79 19.79 0 01-3.07-8.67A2 2 0 012 1h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L6.09 8.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z" /></svg>
               020 7946 0000
             </a>
@@ -157,7 +157,7 @@ const SERVICES = [
 
 function Services() {
   return (
-    <section id="services" className="py-20 px-6">
+    <section id="services" className="py-14 sm:py-20 px-4 sm:px-6">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-12">
           <p className="text-sm font-semibold uppercase tracking-widest mb-3" style={{ color: 'var(--amber)' }}>What we remove</p>
@@ -200,7 +200,7 @@ function HowItWorks() {
   ]
 
   return (
-    <section id="how-it-works" className="py-20 px-6" style={{ background: 'var(--cream-dark)' }}>
+    <section id="how-it-works" className="py-14 sm:py-20 px-4 sm:px-6" style={{ background: 'var(--cream-dark)' }}>
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-12">
           <p className="text-sm font-semibold uppercase tracking-widest mb-3" style={{ color: 'var(--amber)' }}>Simple process</p>
@@ -234,7 +234,7 @@ function WhyUs() {
   ]
 
   return (
-    <section className="py-20 px-6">
+    <section className="py-14 sm:py-20 px-4 sm:px-6">
       <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-16 items-center">
         <div>
           <p className="text-sm font-semibold uppercase tracking-widest mb-3" style={{ color: 'var(--amber)' }}>Why choose us</p>
@@ -242,7 +242,7 @@ function WhyUs() {
           <p className="mb-8" style={{ color: 'var(--text-muted)', lineHeight: '1.7' }}>
             We&apos;ve been clearing London since 2014. Whether it&apos;s a single sofa or a full house clear, we show up, work hard, and leave things clean.
           </p>
-          <Link href="/quote" className="btn-amber">Book your collection →</Link>
+          <Link href="/quote" className="btn-amber w-full sm:w-auto">Book your collection →</Link>
         </div>
         <div className="grid sm:grid-cols-2 gap-5">
           {items.map(item => (
@@ -266,7 +266,7 @@ function Testimonials() {
   ]
 
   return (
-    <section className="py-20 px-6" style={{ background: 'var(--cream-dark)' }}>
+    <section className="py-14 sm:py-20 px-4 sm:px-6" style={{ background: 'var(--cream-dark)' }}>
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-12">
           <p className="text-sm font-semibold uppercase tracking-widest mb-3" style={{ color: 'var(--amber)' }}>Reviews</p>
@@ -295,9 +295,9 @@ function Testimonials() {
 
 function CtaBanner() {
   return (
-    <section className="py-20 px-6 grain-overlay" style={{ background: 'var(--green)' }}>
+    <section className="py-14 sm:py-20 px-4 sm:px-6 grain-overlay" style={{ background: 'var(--green)' }}>
       <div className="relative max-w-3xl mx-auto text-center" style={{ zIndex: 2 }}>
-        <h2 className="font-display text-3xl md:text-5xl font-bold text-white mb-4" style={{ letterSpacing: '-0.03em' }}>Ready to clear it out?</h2>
+        <h2 className="font-display text-2xl sm:text-3xl md:text-5xl font-bold text-white mb-4" style={{ letterSpacing: '-0.03em' }}>Ready to clear it out?</h2>
         <p className="text-white/60 text-lg mb-8">Get an instant quote in 60 seconds — no forms to fill, no calls required.</p>
         <Link href="/quote" className="btn-amber text-lg" style={{ padding: '16px 36px', fontSize: '1.05rem' }}>
           Get my free quote →
@@ -310,7 +310,7 @@ function CtaBanner() {
 function Footer() {
   return (
     <footer style={{ background: '#0f1f18', color: 'rgba(255,255,255,0.5)' }}>
-      <div className="max-w-6xl mx-auto px-6 py-12 grid md:grid-cols-3 gap-8">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-12 grid md:grid-cols-3 gap-8">
         <div>
           <div className="flex items-center gap-2 mb-4">
             <div className="w-7 h-7 rounded-full flex items-center justify-center" style={{ background: 'var(--amber)' }}>
@@ -340,7 +340,7 @@ function Footer() {
           </ul>
         </div>
       </div>
-      <div className="border-t max-w-6xl mx-auto px-6 py-5 flex flex-col sm:flex-row justify-between items-center gap-2 text-xs" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
+      <div className="border-t max-w-6xl mx-auto px-4 sm:px-6 py-5 flex flex-col sm:flex-row justify-between items-center gap-2 text-xs text-center sm:text-left" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
         <span>© 2025 Swift Clear Ltd. All rights reserved.</span>
         <span>Environment Agency Licence No. CBDU123456</span>
       </div>

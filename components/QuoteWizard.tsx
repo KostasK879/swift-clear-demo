@@ -28,7 +28,7 @@ export default function QuoteWizard() {
   function back() { setStep(s => Math.max(s - 1, 0)) }
 
   return (
-    <div className="min-h-screen py-12 px-4" style={{ background: 'var(--cream)' }}>
+    <div className="min-h-screen py-8 sm:py-12 px-4 sc-fab-pad" style={{ background: 'var(--cream)' }}>
       <div className="max-w-2xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
@@ -40,7 +40,7 @@ export default function QuoteWizard() {
             </div>
             <span className="font-display font-bold text-lg" style={{ color: 'var(--green)' }}>Swift Clear</span>
           </a>
-          <h1 className="font-display text-3xl font-bold" style={{ color: 'var(--green)', letterSpacing: '-0.02em' }}>Get your instant quote</h1>
+          <h1 className="font-display text-2xl sm:text-3xl font-bold" style={{ color: 'var(--green)', letterSpacing: '-0.02em' }}>Get your instant quote</h1>
           <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>Takes about 60 seconds</p>
         </div>
 
@@ -75,7 +75,7 @@ export default function QuoteWizard() {
         </div>
 
         {/* Card */}
-        <div className="rounded-2xl p-6 md:p-8" style={{ background: '#fff', boxShadow: '0 4px 24px rgba(27,58,45,0.08), 0 1px 4px rgba(27,58,45,0.04)', border: '1px solid var(--cream-dark)' }}>
+        <div className="rounded-2xl p-4 sm:p-6 md:p-8" style={{ background: '#fff', boxShadow: '0 4px 24px rgba(27,58,45,0.08), 0 1px 4px rgba(27,58,45,0.04)', border: '1px solid var(--cream-dark)' }}>
           {step === 0 && (
             <ServiceStep
               details={serviceDetails}
