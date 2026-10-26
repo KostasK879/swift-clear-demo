@@ -5,7 +5,7 @@ import { GREETING, reply, type Reply } from '@/lib/chatbot'
 
 type Msg = { from: 'bot' | 'me'; r: Reply }
 
-export default function ChatWidget() {
+export default function ChatWidget({ onOpenChange }: { onOpenChange?: (open: boolean) => void }) {
   const [open, setOpen] = useState(false)
   const [teaser, setTeaser] = useState(false)
   const [typing, setTyping] = useState(false)
@@ -26,6 +26,11 @@ export default function ChatWidget() {
     mq.addEventListener('change', apply)
     return () => mq.removeEventListener('change', apply)
   }, [])
+
+  useEffect(() => {
+    onOpenChange?.(open)
+    return () => onOpenChange?.(false)
+  }, [open, onOpenChange])
 
   useEffect(() => { end.current?.scrollIntoView({ behavior: 'smooth' }) }, [msgs, typing, open])
 
@@ -125,7 +130,8 @@ export default function ChatWidget() {
           style={{
             position: 'absolute',
             right: narrow ? 0 : 70,
-            bottom: narrow ? 72 : 8,
+            // Clear the stacked Ellie launcher (56px) + gap (12px) + launcher (56px) + 8px.
+            bottom: narrow ? 132 : 8,
             width: narrow ? 'min(220px, calc(100vw - 32px))' : 210,
             maxWidth: 'calc(100vw - 32px)',
             background: '#fff',

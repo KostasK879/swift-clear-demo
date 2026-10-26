@@ -1,8 +1,7 @@
 import type { Metadata, Viewport } from 'next'
 import { Fraunces, DM_Sans } from 'next/font/google'
 import './globals.css'
-import ChatWidget from '@/components/ChatWidget'
-import VoiceWidget from '@/components/VoiceWidget'
+import Widgets from '@/components/Widgets'
 
 const fraunces = Fraunces({
   subsets: ['latin'],
@@ -33,8 +32,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" className={`${fraunces.variable} ${dmSans.variable}`}>
       <body className="antialiased">
         {children}
-        <ChatWidget />
-        <VoiceWidget />
+        <Widgets />
       </body>
     </html>
   )
