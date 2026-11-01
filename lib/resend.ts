@@ -1,6 +1,7 @@
 import { Resend } from 'resend'
 import type { Booking } from '@/types'
 import { serviceSummary, formatPrice } from './pricing'
+import { phoneDisplay, publicPhoneNumber } from './site-phone'
 
 export async function sendConfirmationEmail(booking: Booking): Promise<boolean> {
   const apiKey = process.env.RESEND_API_KEY
@@ -29,7 +30,7 @@ export async function sendConfirmationEmail(booking: Booking): Promise<boolean> 
         </table>
         <p style="color: #666; font-size: 14px;">Reference: <code>${booking.id.slice(0, 8).toUpperCase()}</code></p>
         <p style="margin-top: 32px;">We'll be in touch if anything changes. See you on the day!</p>
-        <p style="color: #666;">— The Swift Clear Team<br>📞 020 7946 0000 | info@swiftclear.co.uk</p>
+        <p style="color: #666;">— The Swift Clear Team<br>📞 ${publicPhoneNumber() || phoneDisplay()} | info@swiftclear.co.uk</p>
       </div>
     </div>
   `

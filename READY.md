@@ -6,7 +6,7 @@
 
 | What | URL |
 | --- | --- |
-| Website + Clearbot + Ellie web voice | http://localhost:3100 |
+| Website + Ellie chat | http://localhost:3100 |
 | Ellie how-to page | http://localhost:3100/demo-voice |
 | **Public tunnel (Vapi webhook)** | https://floating-diabetes-gbp-gbp.trycloudflare.com |
 | Public demo page | https://floating-diabetes-gbp-gbp.trycloudflare.com/demo-voice |
@@ -20,23 +20,15 @@ If the tunnel URL stops working, restart it:
 
 (Dev server must already be on port 3100: `npm run dev -- -p 3100`)
 
-## Talk to Ellie on the website
+## Talk to Ellie
 
-1. Create a **Public** API key at https://dashboard.vapi.ai/org/api-keys  
-   - Allowed Origins: `http://localhost:3100` (and your tunnel URL if you share it)  
-   - Allowed Assistants: Swift Clear Receptionist  
-2. Add to `.env.local` (never commit):
+Ellie is on the phone, not a button on the website. Set `NEXT_PUBLIC_PHONE_NUMBER` to the real Twilio/Vapi UK number (do not use 020 7946 0000). Customers ring that number.
 
-```
-NEXT_PUBLIC_VAPI_PUBLIC_KEY=your_public_key_here
-NEXT_PUBLIC_VAPI_ASSISTANT_ID=fe2e9be2-9621-4ec1-99b1-7f315d19f69c
-```
+The amber chat bubble is Ellie in writing. Set `AI_GATEWAY_API_KEY` or `OPENAI_API_KEY` for the model. With neither key, the keyword replies are used.
 
-   (Or use server-only `VAPI_PUBLIC_KEY=` — the site loads it via `/api/vapi/web-config`. Never put the **private** key in `NEXT_PUBLIC_*`.)
+After each call or booking, a summary is logged on `/admin`. Set `OWNER_SMS_NUMBER` (and the Twilio keys) to text it to your mobile.
 
-3. Restart the dev server, open http://localhost:3100, click the green **Talk to Ellie** pill, allow mic, **Start talking**.
-
-The private `VAPI_API_KEY` is only for server scripts / webhook setup. Vapi rejects it for browser web calls.
+The private `VAPI_API_KEY` is only for server scripts / webhook setup.
 
 ## Hear Ellie via Vapi dashboard (fallback)
 
@@ -52,9 +44,8 @@ Then Vapi → **Swift Clear Receptionist** → **Talk to Assistant**.
 
 ## What works now
 
-- Clearbot chat bubble on every page
-- Green **Talk to Ellie** web voice widget (needs public key)
-- Ellie tools: quote prices, check slots, book, SMS (demo-logged without Twilio)
+- Ellie chat bubble on every page (model if a key is set, otherwise keyword replies)
+- Ellie tools: quote prices, check slots, book, SMS to the caller and a summary to the owner (demo-logged without Twilio)
 - Transfer-to-human via `HUMAN_TRANSFER_NUMBER`
 - ElevenLabs British voice (Lily)
 - `/demo-voice` instructions page
@@ -63,17 +54,17 @@ Then Vapi → **Swift Clear Receptionist** → **Talk to Assistant**.
 
 | Item | Why |
 | --- | --- |
-| Vapi **public** key | In-browser Talk to Ellie |
+| `NEXT_PUBLIC_PHONE_NUMBER` | The number printed on the site |
+| `OWNER_SMS_NUMBER` | Your mobile for the call summary text |
 | Vapi private key | Create/update assistant, server scripts |
-| Twilio Account SID, Auth Token, From number | Real mid-call SMS |
+| Twilio Account SID, Auth Token, From number | Real SMS (caller confirmation and your summary) |
 | UK Twilio number imported into Vapi | Customers can dial Ellie |
 | Your mobile as `HUMAN_TRANSFER_NUMBER` | "Put me through to a person" |
 
 ## Files
 
-- `components/VoiceWidget.tsx` - in-browser Ellie
-- `app/api/vapi/web-config/route.ts` - public key + assistant id for the browser (no private key)
-- `app/api/vapi/route.ts` - webhook tools
+- `app/api/chat/route.ts` - website chat (model, or keyword fallback)
+- `app/api/vapi/route.ts` - webhook tools and the owner summary after a call
 - `vapi/assistant.json` - Ellie prompt + voice + tools
 - `scripts/setup-vapi.mjs` - push config to Vapi
 - `app/demo-voice/page.tsx` - review page

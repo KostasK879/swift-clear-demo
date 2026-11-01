@@ -8,7 +8,9 @@ import {
   demoListBookings,
   isSupabaseConfigured,
 } from '@/lib/demo-store'
-import { calculatePrice } from '@/lib/pricing'
+import { HOUSE_CALLBACK } from '@/lib/ellie-copy'
+import { notifyOwner, ownerBodyForBooking } from '@/lib/owner-notify'
+import { calculatePrice, houseClearancePrice } from '@/lib/pricing'
 import {
   SERVICE_ROLE_MISSING,
   adminServerClient,
@@ -23,8 +25,27 @@ function shouldUseDemo(): boolean {
 // Public: customers create bookings with the anon/publishable key.
 // RLS allows anon INSERT on bookings but not SELECT, so we generate id/created_at
 // server-side and insert without reading the row back.
+async function confirmBooking(booking: Booking): Promise<boolean> {
+  let emailSent = false
+  try {
+    emailSent = await sendConfirmationEmail(booking)
+  } catch (err) {
+    console.error('Confirmation email failed:', err)
+  }
+  try {
+    await notifyOwner('booked', ownerBodyForBooking(booking))
+  } catch (err) {
+    console.error('Owner SMS after booking failed:', err)
+  }
+  return emailSent
+}
+
 export async function POST(req: NextRequest) {
   const body = await req.json()
+
+  if (body.service_details?.category === 'house' && houseClearancePrice(body.service_details.houseSize) == null) {
+    return NextResponse.json({ error: HOUSE_CALLBACK }, { status: 422 })
+  }
 
   // Never trust client-supplied price in a public demo.
   let price = body.price
@@ -51,12 +72,7 @@ export async function POST(req: NextRequest) {
 
   if (shouldUseDemo()) {
     const demoBooking = demoInsertBooking(booking)
-    let emailSent = false
-    try {
-      emailSent = await sendConfirmationEmail(demoBooking)
-    } catch (err) {
-      console.error('Confirmation email failed (demo mode):', err)
-    }
+    const emailSent = await confirmBooking(demoBooking)
     return NextResponse.json({ booking: demoBooking, demo: true, emailSent }, { status: 201 })
   }
 
@@ -66,20 +82,17 @@ export async function POST(req: NextRequest) {
 
     if (error) {
       const demoBooking = demoInsertBooking(booking)
-      return NextResponse.json({ booking: demoBooking, demo: true, warning: error.message }, { status: 201 })
+      const emailSent = await confirmBooking(demoBooking)
+      return NextResponse.json({ booking: demoBooking, demo: true, warning: error.message, emailSent }, { status: 201 })
     }
 
-    let emailSent = false
-    try {
-      emailSent = await sendConfirmationEmail(booking)
-    } catch (err) {
-      console.error('Confirmation email failed (booking saved):', err)
-    }
+    const emailSent = await confirmBooking(booking)
     return NextResponse.json({ booking, emailSent }, { status: 201 })
   } catch (err) {
     const demoBooking = demoInsertBooking(booking)
+    const emailSent = await confirmBooking(demoBooking)
     const message = err instanceof Error ? err.message : 'supabase unreachable'
-    return NextResponse.json({ booking: demoBooking, demo: true, warning: message }, { status: 201 })
+    return NextResponse.json({ booking: demoBooking, demo: true, warning: message, emailSent }, { status: 201 })
   }
 }
 

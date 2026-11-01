@@ -1,4 +1,19 @@
+import type { ReactNode } from 'react'
 import Link from 'next/link'
+import { phoneDisplay, phoneTelHref } from '@/lib/site-phone'
+
+function PhoneLink({ className, children }: { className?: string; children?: ReactNode }) {
+  const href = phoneTelHref()
+  const content = children ?? phoneDisplay()
+  if (!href) {
+    return (
+      <span className={className} title="Set NEXT_PUBLIC_PHONE_NUMBER to a real Twilio or Vapi UK number.">
+        {content}
+      </span>
+    )
+  }
+  return <a href={href} className={className}>{content}</a>
+}
 
 export default function HomePage() {
   return (
@@ -30,7 +45,7 @@ function Nav() {
         <nav className="hidden md:flex items-center gap-8">
           <a href="#services" className="text-sm font-medium text-white/70 hover:text-white transition-colors">Services</a>
           <a href="#how-it-works" className="text-sm font-medium text-white/70 hover:text-white transition-colors">How It Works</a>
-          <a href="tel:02079460000" className="text-sm font-medium text-white/70 hover:text-white transition-colors">020 7946 0000</a>
+          <PhoneLink className="text-sm font-medium text-white/70 hover:text-white transition-colors">{phoneDisplay()}</PhoneLink>
           <Link href="/quote" className="btn-amber text-sm px-5 py-2.5" style={{ padding: '10px 20px', fontSize: '0.875rem' }}>Get a Quote</Link>
         </nav>
         <Link href="/quote" className="md:hidden btn-amber" style={{ padding: '8px 16px', fontSize: '0.875rem' }}>Quote</Link>
@@ -66,10 +81,10 @@ function Hero() {
             <Link href="/quote" className="btn-amber w-full sm:w-auto">
               Get a Free Quote →
             </Link>
-            <a href="tel:02079460000" className="btn-outline w-full sm:w-auto">
+            <PhoneLink className="btn-outline w-full sm:w-auto">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.82a19.79 19.79 0 01-3.07-8.67A2 2 0 012 1h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L6.09 8.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z" /></svg>
-              020 7946 0000
-            </a>
+              {phoneDisplay()}
+            </PhoneLink>
           </div>
           <div className="flex flex-wrap gap-6 mt-10 justify-center md:justify-start animate-fade-up delay-400">
             {['Fully licensed', 'Fully insured', '5★ rated', 'Eco-friendly'].map(badge => (
@@ -333,7 +348,7 @@ function Footer() {
         <div>
           <h4 className="text-white font-semibold mb-4 text-sm">Contact</h4>
           <ul className="space-y-2 text-sm">
-            <li>📞 <a href="tel:02079460000" className="hover:text-white transition-colors">020 7946 0000</a></li>
+            <li>📞 <PhoneLink className="hover:text-white transition-colors">{phoneDisplay()}</PhoneLink></li>
             <li>✉ <a href="mailto:info@swiftclear.co.uk" className="hover:text-white transition-colors">info@swiftclear.co.uk</a></li>
             <li>📍 London, UK</li>
             <li className="pt-2"><Link href="/admin" className="text-xs opacity-40 hover:opacity-70 transition-opacity">Admin</Link></li>

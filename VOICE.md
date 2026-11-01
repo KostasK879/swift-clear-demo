@@ -13,8 +13,9 @@ website (Supabase, or the in-memory demo store when `DEMO_MODE=1` or Supabase is
 ## What's new (matching the Instagram reels)
 
 1. **SMS confirmation mid-call** — after booking, Ellie calls `send_sms` and texts the caller a short summary (reference, date, slot, address, price). Uses Twilio when `TWILIO_*` env vars are set; otherwise logs the SMS and returns success (demo-safe).
-2. **Transfer to a human** — built-in Vapi `transferCall` to `HUMAN_TRANSFER_NUMBER`. If asked "are you AI?", she discloses and offers to transfer; if they want a person, she transfers.
-3. **Better voice** — ElevenLabs (`11labs`) Flash v2.5, default voice **Lily** (`pFZP5JQG7iQjIQuC4Bku`, British female). Override with `ELEVENLABS_VOICE_ID`. STT stays Deepgram `en-GB`.
+2. **Owner summary** — after a booking, and after a call that does not book, the server texts `OWNER_SMS_NUMBER` (same Twilio path). The wording is fixed. If the owner number or Twilio is missing, the text is logged and shown on `/admin`. A booking text is not sent again at the end of that same call.
+3. **Transfer to a human** — built-in Vapi `transferCall` to `HUMAN_TRANSFER_NUMBER`. If asked "are you AI?", she discloses and offers to transfer; if they want a person, she transfers.
+4. **Better voice** — ElevenLabs (`11labs`) Flash v2.5, default voice **Lily** (`pFZP5JQG7iQjIQuC4Bku`, British female). Override with `ELEVENLABS_VOICE_ID`. STT stays Deepgram `en-GB`.
 
 ## Env vars
 
@@ -27,6 +28,8 @@ VAPI_SECRET=some-long-random-string
 # Twilio (real SMS). Without these, send_sms still "succeeds" in demo and logs the body.
 TWILIO_ACCOUNT_SID=
 TWILIO_AUTH_TOKEN=
+# OWNER_SMS_NUMBER=+447...
+# NEXT_PUBLIC_PHONE_NUMBER=020 1234 5678
 TWILIO_FROM_NUMBER=
 
 # Used by scripts/setup-vapi.mjs when pushing assistant.json to Vapi
@@ -103,12 +106,11 @@ Bookings then appear in `/admin`.
 - Real SMS needs Twilio. Real transfer needs a real `HUMAN_TRANSFER_NUMBER` and a live phone call (not browser Talk-to-Assistant for transfer testing).
 - To re-skin for another trade: change the prompt, prices in `lib/pricing.ts`, the name and the voice id.
 
-## In-browser voice (website widget)
+## On the website
 
-1. Create a **Public** API key in the Vapi dashboard (API Keys → Public).
-2. Set `NEXT_PUBLIC_VAPI_PUBLIC_KEY` (or `VAPI_PUBLIC_KEY`) in `.env.local`.
-3. Open http://localhost:3100 and click **Talk to Ellie** (green pill above Clearbot).
-4. Allow the microphone and speak.
+There is no Talk to Ellie button. Ellie answers the phone number in `NEXT_PUBLIC_PHONE_NUMBER`. The amber bubble is the website chat.
 
-Do **not** expose `VAPI_API_KEY` (private) to the browser. Vapi rejects private keys for `/call/web`.
+To hear her before the UK number is connected, open the assistant in the Vapi dashboard and use **Talk to Assistant** (that still needs a public `SERVER_URL`).
+
+Do **not** expose `VAPI_API_KEY` (private) to the browser.
 
