@@ -275,7 +275,7 @@ function WhyUs() {
 
 function Testimonials() {
   const reviews = [
-    { name: 'Sarah T.', location: 'Lewisham', stars: 5, text: "Used Swift Clear for a full house clearance before moving. The team arrived on time, worked quickly and were incredibly polite. Left the place spotless. Would use again in a heartbeat." },
+    { name: 'Sarah T.', location: 'Kent', stars: 5, text: "Used Swift Clear for a full house clearance before moving. The team arrived on time, worked quickly and were incredibly polite. Left the place spotless. Would use again in a heartbeat." },
     { name: 'Marcus B.', location: 'Hackney', stars: 5, text: "Needed an old sofa and fridge taken away same day. Booked online at 8am, they were there by 10. Pricing was clear, no nonsense. Exactly what you want from a clearance company." },
     { name: 'Priya K.', location: 'Bromley', stars: 5, text: "After a kitchen renovation I had a mountain of rubble and old units. Swift Clear sorted it in one visit. Quoted online, paid online, done. Brilliant service." },
   ]
