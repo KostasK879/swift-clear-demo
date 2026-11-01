@@ -183,7 +183,7 @@ export function reply(input: string, opts?: { lastUnclear?: number }): Reply {
     return { text: "Easiest way is our 60-second quote tool: pick your items, choose a slot and you're booked. No call-outs, no surprises.", link: QUOTE }
   }
   if (has(s, 'same day', 'same-day', 'today', 'tomorrow', 'urgent', 'how soon', 'when')) {
-    return { text: 'Yes, we offer same-day collection across London when there is a slot free. Pick your time in the quote tool and you will see live availability.', link: QUOTE, chips: ['Get a price'] }
+    return { text: 'Yes, we offer same-day collection across Kent when there is a slot free. Pick your time in the quote tool and you will see live availability.', link: QUOTE, chips: ['Get a price'] }
   }
   if (has(s, 'furniture', 'sofa', 'bed', 'wardrobe', 'table', 'chair', 'mattress', 'desk')) {
     const list = Object.keys(FURNITURE_PRICES).filter((k) => k !== 'other').map((k) => `${FURNITURE_LABELS[k]} £${FURNITURE_PRICES[k]}`).join(', ')

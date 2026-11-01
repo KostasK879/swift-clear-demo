@@ -174,8 +174,8 @@ async function getPrice(args: Args): Promise<string> {
 
 async function checkAvailability(args: Args): Promise<string> {
   const date = str(args.date)
-  if (!isValidDate(date)) throw new Error(`Date must be YYYY-MM-DD. Today in London is ${londonToday()}.`)
-  if (date < londonToday()) throw new Error(`That date is in the past. Today in London is ${londonToday()}.`)
+  if (!isValidDate(date)) throw new Error(`Date must be YYYY-MM-DD. Today in Kent is ${londonToday()}.`)
+  if (date < londonToday()) throw new Error(`That date is in the past. Today in Kent is ${londonToday()}.`)
   const taken = await takenSlots(date)
   const free = TIME_SLOTS.filter((s) => !taken.has(s))
   return free.length
@@ -203,7 +203,7 @@ async function createBooking(args: Args, ctx: ToolCtx): Promise<string> {
   }
   if (missing.length) throw new Error(`Missing or invalid: ${missing.join(', ')}. Slots are ${TIME_SLOTS.join(', ')}.`)
   if (!isValidDate(date) || date < londonToday()) {
-    throw new Error(`Invalid date. Today in London is ${londonToday()}.`)
+    throw new Error(`Invalid date. Today in Kent is ${londonToday()}.`)
   }
 
   const details = buildServiceDetails(args)

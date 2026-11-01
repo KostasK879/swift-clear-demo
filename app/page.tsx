@@ -67,10 +67,10 @@ function Hero() {
         <div className="flex-1 text-center md:text-left">
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold mb-6 animate-fade-up" style={{ background: 'rgba(224,139,32,0.2)', color: 'var(--amber)', border: '1px solid rgba(224,139,32,0.3)' }}>
             <span className="w-1.5 h-1.5 rounded-full bg-amber-400 inline-block animate-pulse" />
-            Same-day collection available across London
+            Same-day collection available across Kent
           </div>
           <h1 className="font-display text-3xl sm:text-4xl md:text-6xl font-bold text-white leading-tight tracking-tight mb-5 animate-fade-up delay-100" style={{ letterSpacing: '-0.03em', lineHeight: '1.1' }}>
-            London&apos;s fastest<br />
+            Kent&apos;s fastest<br />
             <span style={{ color: 'var(--amber)' }}>waste removal</span><br />
             service
           </h1>
@@ -243,7 +243,7 @@ function HowItWorks() {
 function WhyUs() {
   const items = [
     { icon: '✓', title: 'Fully licensed & insured', desc: 'Environment Agency registered waste carrier. Full public liability insurance.' },
-    { icon: '⚡', title: 'Same-day available', desc: 'Book before 10am for same-day collection across most London postcodes.' },
+    { icon: '⚡', title: 'Same-day available', desc: 'Book before 10am for same-day collection across most Kent postcodes.' },
     { icon: '♻', title: 'Eco-responsible disposal', desc: '95% of waste recycled or reused — we never fly-tip.' },
     { icon: '💷', title: 'No hidden charges', desc: 'The price you see is the price you pay. No surprises on the day.' },
   ]
@@ -253,9 +253,9 @@ function WhyUs() {
       <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-16 items-center">
         <div>
           <p className="text-sm font-semibold uppercase tracking-widest mb-3" style={{ color: 'var(--amber)' }}>Why choose us</p>
-          <h2 className="font-display text-3xl md:text-4xl font-bold mb-6" style={{ color: 'var(--green)', letterSpacing: '-0.02em' }}>Trusted by thousands of London homes</h2>
+          <h2 className="font-display text-3xl md:text-4xl font-bold mb-6" style={{ color: 'var(--green)', letterSpacing: '-0.02em' }}>Trusted by thousands of Kent homes</h2>
           <p className="mb-8" style={{ color: 'var(--text-muted)', lineHeight: '1.7' }}>
-            We&apos;ve been clearing London since 2014. Whether it&apos;s a single sofa or a full house clear, we show up, work hard, and leave things clean.
+            We&apos;ve been clearing Kent. Whether it&apos;s a single sofa or a full house clear, we show up, work hard, and leave things clean.
           </p>
           <Link href="/quote" className="btn-amber w-full sm:w-auto">Book your collection →</Link>
         </div>
@@ -335,7 +335,7 @@ function Footer() {
             </div>
             <span className="font-display font-bold text-lg text-white">Swift Clear</span>
           </div>
-          <p className="text-sm" style={{ lineHeight: '1.7' }}>London&apos;s trusted waste removal service since 2014. Licensed, insured, and eco-responsible.</p>
+          <p className="text-sm" style={{ lineHeight: '1.7' }}>Kent&apos;s trusted waste removal service. Licensed, insured, and eco-responsible.</p>
         </div>
         <div>
           <h4 className="text-white font-semibold mb-4 text-sm">Services</h4>
@@ -350,7 +350,7 @@ function Footer() {
           <ul className="space-y-2 text-sm">
             <li>📞 <PhoneLink className="hover:text-white transition-colors">{phoneDisplay()}</PhoneLink></li>
             <li>✉ <a href="mailto:info@swiftclear.co.uk" className="hover:text-white transition-colors">info@swiftclear.co.uk</a></li>
-            <li>📍 London, UK</li>
+            <li>📍 Kent, UK</li>
             <li className="pt-2"><Link href="/admin" className="text-xs opacity-40 hover:opacity-70 transition-opacity">Admin</Link></li>
           </ul>
         </div>
