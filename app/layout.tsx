@@ -16,8 +16,8 @@ const dmSans = DM_Sans({
 })
 
 export const metadata: Metadata = {
-  title: 'Swift Clear | Same-Day Waste Removal London',
-  description: 'Fast, reliable waste removal across London. Furniture, garden waste, rubble, junk, and appliances. Get an instant quote and book online.',
+  title: 'Swift Clear | Same-Day Waste Removal Kent',
+  description: 'Fast, reliable waste removal across Kent. Furniture, garden waste, rubble, junk, and appliances. Get an instant quote and book online.',
 }
 
 export const viewport: Viewport = {

@@ -101,11 +101,11 @@ img, svg, video, canvas {
 
 /* Keep page content clear of floating FABs */
 .sc-fab-pad {
-  padding-bottom: calc(140px + env(safe-area-inset-bottom, 0px));
+  padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px));
 }
 @media (min-width: 481px) {
   .sc-fab-pad {
-    padding-bottom: calc(120px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: calc(88px + env(safe-area-inset-bottom, 0px));
   }
 }
 

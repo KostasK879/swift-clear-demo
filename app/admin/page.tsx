@@ -3,6 +3,21 @@
 import { useState, useEffect, useCallback } from 'react'
 import { format } from 'date-fns'
 import type { Booking, BlockedSlot, TimeSlot } from '@/types'
+
+type OwnerNotice = {
+  id: string
+  created_at: string
+  kind: 'booked' | 'missed'
+  body: string
+  delivery: 'sent' | 'demo' | 'skipped' | 'failed'
+  detail: string
+}
+
+type OwnerMeta = {
+  ownerNumberSet: boolean
+  ownerNumberHint: string | null
+  housePrices: { id: string; label: string; price: number | null }[]
+}
 import { TIME_SLOTS } from '@/types'
 import { serviceSummary, formatPrice } from '@/lib/pricing'
 
@@ -15,17 +30,26 @@ export default function AdminPage() {
   const [blocking, setBlocking] = useState(false)
   const [loadError, setLoadError] = useState<string | null>(null)
   const [sortCol, setSortCol] = useState<'date' | 'created_at' | 'price'>('date')
+  const [notices, setNotices] = useState<OwnerNotice[]>([])
+  const [ownerMeta, setOwnerMeta] = useState<OwnerMeta | null>(null)
 
   const load = useCallback(async () => {
     setLoading(true)
-    const [bRes, bsRes] = await Promise.all([
+    const [bRes, bsRes, oRes] = await Promise.all([
       fetch('/api/bookings'),
       fetch('/api/blocked-slots'),
+      fetch('/api/owner-sms'),
     ])
-    const [bData, bsData] = await Promise.all([bRes.json(), bsRes.json()])
+    const [bData, bsData, oData] = await Promise.all([bRes.json(), bsRes.json(), oRes.json()])
     setBookings(bData.bookings ?? [])
     setLoadError(bData.error ?? null)
     setBlockedSlots(bsData.blocked_slots ?? [])
+    setNotices(oData.notices ?? [])
+    setOwnerMeta({
+      ownerNumberSet: Boolean(oData.ownerNumberSet),
+      ownerNumberHint: oData.ownerNumberHint ?? null,
+      housePrices: oData.housePrices ?? [],
+    })
     setLoading(false)
   }, [])
 
@@ -109,6 +133,53 @@ export default function AdminPage() {
               <div className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.3)' }}>{s.sub}</div>
             </div>
           ))}
+        </div>
+
+        <div className="grid lg:grid-cols-2 gap-6 mb-8">
+          <div style={card} className="p-5">
+            <h2 className="font-semibold text-sm text-white mb-1">Texts to you</h2>
+            <p className="text-xs mb-4" style={{ color: 'rgba(255,255,255,0.45)' }}>
+              {ownerMeta?.ownerNumberSet
+                ? `After each call or booking, Ellie texts your mobile (${ownerMeta.ownerNumberHint ?? 'set'}).`
+                : 'Set OWNER_SMS_NUMBER to your mobile. Until then these summaries are logged here only.'}
+            </p>
+            {notices.length === 0 ? (
+              <p className="text-xs" style={{ color: 'rgba(255,255,255,0.3)' }}>No call or booking summaries yet.</p>
+            ) : (
+              <div className="space-y-3">
+                {notices.slice(0, 8).map(notice => (
+                  <div key={notice.id} className="rounded-lg px-3 py-2" style={{ background: 'rgba(255,255,255,0.04)' }}>
+                    <div className="flex items-center justify-between gap-2 mb-1">
+                      <span className="text-xs font-semibold" style={{ color: notice.kind === 'booked' ? '#4ade80' : '#E08B20' }}>
+                        {notice.kind === 'booked' ? 'Booked' : 'Missed booking'}
+                      </span>
+                      <span className="text-xs" style={{ color: 'rgba(255,255,255,0.35)' }}>{notice.delivery}</span>
+                    </div>
+                    <p className="text-sm text-white" style={{ lineHeight: 1.45 }}>{notice.body}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+          <div style={card} className="p-5">
+            <h2 className="font-semibold text-sm text-white mb-1">House clearance prices</h2>
+            <p className="text-xs mb-4" style={{ color: 'rgba(255,255,255,0.45)' }}>
+              These are yours to set. While a price is blank, Ellie does not guess. She offers a same-day callback.
+            </p>
+            <div className="space-y-2">
+              {(ownerMeta?.housePrices ?? []).map(row => (
+                <div key={row.id} className="flex items-center justify-between text-sm">
+                  <span style={{ color: 'rgba(255,255,255,0.7)' }}>{row.label}</span>
+                  <span className="font-semibold" style={{ color: row.price == null ? '#E08B20' : '#fff' }}>
+                    {row.price == null ? 'Not set' : formatPrice(row.price)}
+                  </span>
+                </div>
+              ))}
+            </div>
+            <p className="text-xs mt-4" style={{ color: 'rgba(255,255,255,0.35)' }}>
+              Set HOUSE_PRICE_PER_ROOM, HOUSE_PRICE_1_BED, HOUSE_PRICE_2_BED or HOUSE_PRICE_3_BED. Leave them blank until you decide.
+            </p>
+          </div>
         </div>
 
         <div className="grid lg:grid-cols-3 gap-6">

@@ -5,13 +5,14 @@ import { GREETING, reply, type Reply } from '@/lib/chatbot'
 
 type Msg = { from: 'bot' | 'me'; r: Reply }
 
-export default function ChatWidget({ onOpenChange }: { onOpenChange?: (open: boolean) => void }) {
+export default function ChatWidget() {
   const [open, setOpen] = useState(false)
   const [teaser, setTeaser] = useState(false)
   const [typing, setTyping] = useState(false)
   const [input, setInput] = useState('')
   const [msgs, setMsgs] = useState<Msg[]>([{ from: 'bot', r: GREETING }])
   const [narrow, setNarrow] = useState(false)
+  const [lastUnclear, setLastUnclear] = useState<number | undefined>(undefined)
   const end = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -27,23 +28,41 @@ export default function ChatWidget({ onOpenChange }: { onOpenChange?: (open: boo
     return () => mq.removeEventListener('change', apply)
   }, [])
 
-  useEffect(() => {
-    onOpenChange?.(open)
-    return () => onOpenChange?.(false)
-  }, [open, onOpenChange])
-
   useEffect(() => { end.current?.scrollIntoView({ behavior: 'smooth' }) }, [msgs, typing, open])
 
-  function send(text: string) {
+  async function send(text: string) {
     const t = text.trim()
-    if (!t) return
+    if (!t || typing) return
+    const history = [...msgs, { from: 'me' as const, r: { text: t } }]
     setInput('')
-    setMsgs(m => [...m, { from: 'me', r: { text: t } }])
+    setMsgs(history)
     setTyping(true)
-    setTimeout(() => {
-      setMsgs(m => [...m, { from: 'bot', r: reply(t) }])
+    const local = () => {
+      const turn = reply(t, { lastUnclear })
+      if (typeof turn.unclearIndex === 'number') setLastUnclear(turn.unclearIndex)
+      setMsgs(m => [...m, { from: 'bot', r: { text: turn.text, chips: turn.chips, link: turn.link } }])
+    }
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          lastUnclear,
+          messages: history.map(m => ({ role: m.from === 'me' ? 'user' : 'assistant', content: m.r.text })),
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok || !data?.reply?.text) {
+        local()
+      } else {
+        if (typeof data.unclearIndex === 'number') setLastUnclear(data.unclearIndex)
+        setMsgs(m => [...m, { from: 'bot', r: data.reply }])
+      }
+    } catch {
+      local()
+    } finally {
       setTyping(false)
-    }, 600)
+    }
   }
 
   const edge = 'max(16px, env(safe-area-inset-right))'
@@ -85,8 +104,8 @@ export default function ChatWidget({ onOpenChange }: { onOpenChange?: (open: boo
           <div style={{ background: '#1B3A2D', color: '#fff', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 12 }}>
             <div style={{ width: 38, height: 38, borderRadius: '50%', background: '#E08B20', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, flexShrink: 0 }}>♻️</div>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontWeight: 700 }}>Clearbot</div>
-              <div style={{ fontSize: 12, opacity: .75 }}><span style={{ display: 'inline-block', width: 7, height: 7, borderRadius: '50%', background: '#4ade80', marginRight: 6 }} />Online · replies instantly</div>
+              <div style={{ fontWeight: 700 }}>Ellie</div>
+              <div style={{ fontSize: 12, opacity: .75 }}><span style={{ display: 'inline-block', width: 7, height: 7, borderRadius: '50%', background: '#4ade80', marginRight: 6 }} />AI assistant · happy to help</div>
             </div>
             <button onClick={() => setOpen(false)} aria-label="Minimise chat" style={{ background: 'none', border: 0, color: '#fff', fontSize: 22, cursor: 'pointer', width: 44, height: 44, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>–</button>
           </div>
@@ -130,8 +149,7 @@ export default function ChatWidget({ onOpenChange }: { onOpenChange?: (open: boo
           style={{
             position: 'absolute',
             right: narrow ? 0 : 70,
-            // Clear the stacked Ellie launcher (56px) + gap (12px) + launcher (56px) + 8px.
-            bottom: narrow ? 132 : 8,
+            bottom: narrow ? 72 : 8,
             width: narrow ? 'min(220px, calc(100vw - 32px))' : 210,
             maxWidth: 'calc(100vw - 32px)',
             background: '#fff',

@@ -140,7 +140,7 @@ export default function BookingStep({
         <textarea
           value={address}
           onChange={e => onAddressChange(e.target.value)}
-          placeholder="e.g. 14 Maple Street, Lewisham, London SE13 6AB"
+          placeholder="e.g. 14 Maple Street, Chatham, Kent ME4 4AA"
           rows={2}
           className="w-full rounded-xl px-4 py-3 text-sm resize-none focus:outline-none focus:ring-2"
           style={{

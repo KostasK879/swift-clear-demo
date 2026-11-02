@@ -1,4 +1,19 @@
+import type { ReactNode } from 'react'
 import Link from 'next/link'
+import { phoneDisplay, phoneTelHref } from '@/lib/site-phone'
+
+function PhoneLink({ className, children }: { className?: string; children?: ReactNode }) {
+  const href = phoneTelHref()
+  const content = children ?? phoneDisplay()
+  if (!href) {
+    return (
+      <span className={className} title="Set NEXT_PUBLIC_PHONE_NUMBER to a real Twilio or Vapi UK number.">
+        {content}
+      </span>
+    )
+  }
+  return <a href={href} className={className}>{content}</a>
+}
 
 export default function HomePage() {
   return (
@@ -30,7 +45,7 @@ function Nav() {
         <nav className="hidden md:flex items-center gap-8">
           <a href="#services" className="text-sm font-medium text-white/70 hover:text-white transition-colors">Services</a>
           <a href="#how-it-works" className="text-sm font-medium text-white/70 hover:text-white transition-colors">How It Works</a>
-          <a href="tel:02079460000" className="text-sm font-medium text-white/70 hover:text-white transition-colors">020 7946 0000</a>
+          <PhoneLink className="text-sm font-medium text-white/70 hover:text-white transition-colors">{phoneDisplay()}</PhoneLink>
           <Link href="/quote" className="btn-amber text-sm px-5 py-2.5" style={{ padding: '10px 20px', fontSize: '0.875rem' }}>Get a Quote</Link>
         </nav>
         <Link href="/quote" className="md:hidden btn-amber" style={{ padding: '8px 16px', fontSize: '0.875rem' }}>Quote</Link>
@@ -52,10 +67,10 @@ function Hero() {
         <div className="flex-1 text-center md:text-left">
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold mb-6 animate-fade-up" style={{ background: 'rgba(224,139,32,0.2)', color: 'var(--amber)', border: '1px solid rgba(224,139,32,0.3)' }}>
             <span className="w-1.5 h-1.5 rounded-full bg-amber-400 inline-block animate-pulse" />
-            Same-day collection available across London
+            Same-day collection available across Kent
           </div>
           <h1 className="font-display text-3xl sm:text-4xl md:text-6xl font-bold text-white leading-tight tracking-tight mb-5 animate-fade-up delay-100" style={{ letterSpacing: '-0.03em', lineHeight: '1.1' }}>
-            London&apos;s fastest<br />
+            Kent&apos;s fastest<br />
             <span style={{ color: 'var(--amber)' }}>waste removal</span><br />
             service
           </h1>
@@ -66,10 +81,10 @@ function Hero() {
             <Link href="/quote" className="btn-amber w-full sm:w-auto">
               Get a Free Quote →
             </Link>
-            <a href="tel:02079460000" className="btn-outline w-full sm:w-auto">
+            <PhoneLink className="btn-outline w-full sm:w-auto">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.82a19.79 19.79 0 01-3.07-8.67A2 2 0 012 1h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L6.09 8.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z" /></svg>
-              020 7946 0000
-            </a>
+              {phoneDisplay()}
+            </PhoneLink>
           </div>
           <div className="flex flex-wrap gap-6 mt-10 justify-center md:justify-start animate-fade-up delay-400">
             {['Fully licensed', 'Fully insured', '5★ rated', 'Eco-friendly'].map(badge => (
@@ -228,7 +243,7 @@ function HowItWorks() {
 function WhyUs() {
   const items = [
     { icon: '✓', title: 'Fully licensed & insured', desc: 'Environment Agency registered waste carrier. Full public liability insurance.' },
-    { icon: '⚡', title: 'Same-day available', desc: 'Book before 10am for same-day collection across most London postcodes.' },
+    { icon: '⚡', title: 'Same-day available', desc: 'Book before 10am for same-day collection across most Kent postcodes.' },
     { icon: '♻', title: 'Eco-responsible disposal', desc: '95% of waste recycled or reused — we never fly-tip.' },
     { icon: '💷', title: 'No hidden charges', desc: 'The price you see is the price you pay. No surprises on the day.' },
   ]
@@ -238,9 +253,9 @@ function WhyUs() {
       <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-16 items-center">
         <div>
           <p className="text-sm font-semibold uppercase tracking-widest mb-3" style={{ color: 'var(--amber)' }}>Why choose us</p>
-          <h2 className="font-display text-3xl md:text-4xl font-bold mb-6" style={{ color: 'var(--green)', letterSpacing: '-0.02em' }}>Trusted by thousands of London homes</h2>
+          <h2 className="font-display text-3xl md:text-4xl font-bold mb-6" style={{ color: 'var(--green)', letterSpacing: '-0.02em' }}>Trusted by thousands of Kent homes</h2>
           <p className="mb-8" style={{ color: 'var(--text-muted)', lineHeight: '1.7' }}>
-            We&apos;ve been clearing London since 2014. Whether it&apos;s a single sofa or a full house clear, we show up, work hard, and leave things clean.
+            We&apos;ve been clearing Kent. Whether it&apos;s a single sofa or a full house clear, we show up, work hard, and leave things clean.
           </p>
           <Link href="/quote" className="btn-amber w-full sm:w-auto">Book your collection →</Link>
         </div>
@@ -260,7 +275,7 @@ function WhyUs() {
 
 function Testimonials() {
   const reviews = [
-    { name: 'Sarah T.', location: 'Lewisham', stars: 5, text: "Used Swift Clear for a full house clearance before moving. The team arrived on time, worked quickly and were incredibly polite. Left the place spotless. Would use again in a heartbeat." },
+    { name: 'Sarah T.', location: 'Kent', stars: 5, text: "Used Swift Clear for a full house clearance before moving. The team arrived on time, worked quickly and were incredibly polite. Left the place spotless. Would use again in a heartbeat." },
     { name: 'Marcus B.', location: 'Hackney', stars: 5, text: "Needed an old sofa and fridge taken away same day. Booked online at 8am, they were there by 10. Pricing was clear, no nonsense. Exactly what you want from a clearance company." },
     { name: 'Priya K.', location: 'Bromley', stars: 5, text: "After a kitchen renovation I had a mountain of rubble and old units. Swift Clear sorted it in one visit. Quoted online, paid online, done. Brilliant service." },
   ]
@@ -320,7 +335,7 @@ function Footer() {
             </div>
             <span className="font-display font-bold text-lg text-white">Swift Clear</span>
           </div>
-          <p className="text-sm" style={{ lineHeight: '1.7' }}>London&apos;s trusted waste removal service since 2014. Licensed, insured, and eco-responsible.</p>
+          <p className="text-sm" style={{ lineHeight: '1.7' }}>Kent&apos;s trusted waste removal service. Licensed, insured, and eco-responsible.</p>
         </div>
         <div>
           <h4 className="text-white font-semibold mb-4 text-sm">Services</h4>
@@ -333,9 +348,9 @@ function Footer() {
         <div>
           <h4 className="text-white font-semibold mb-4 text-sm">Contact</h4>
           <ul className="space-y-2 text-sm">
-            <li>📞 <a href="tel:02079460000" className="hover:text-white transition-colors">020 7946 0000</a></li>
+            <li>📞 <PhoneLink className="hover:text-white transition-colors">{phoneDisplay()}</PhoneLink></li>
             <li>✉ <a href="mailto:info@swiftclear.co.uk" className="hover:text-white transition-colors">info@swiftclear.co.uk</a></li>
-            <li>📍 London, UK</li>
+            <li>📍 Kent, UK</li>
             <li className="pt-2"><Link href="/admin" className="text-xs opacity-40 hover:opacity-70 transition-opacity">Admin</Link></li>
           </ul>
         </div>

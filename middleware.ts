@@ -8,6 +8,7 @@ import { NextRequest, NextResponse } from 'next/server'
  *   - /api/bookings for every method except POST (POST is the public quote flow)
  *   - /api/blocked-slots and /api/blocked-slots/* for every method (admin only;
  *     the public quote flow reads /api/availability instead)
+ *   - /api/owner-sms (owner summary texts and house-price status)
  *
  * Credentials come from ADMIN_USER (default "admin") and ADMIN_PASSWORD.
  * Fails closed: if ADMIN_PASSWORD is not set, protected routes return 503.
@@ -21,6 +22,7 @@ function isProtected(req: NextRequest): boolean {
 
   if (path === '/admin' || path.startsWith('/admin/')) return true
   if (path === '/api/blocked-slots' || path.startsWith('/api/blocked-slots/')) return true
+  if (path === '/api/owner-sms' || path.startsWith('/api/owner-sms/')) return true
   if (path === '/api/bookings' || path.startsWith('/api/bookings/')) {
     return !(path === '/api/bookings' && req.method === 'POST')
   }
@@ -92,5 +94,5 @@ export function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/admin', '/admin/:path*', '/api/bookings', '/api/bookings/:path*', '/api/blocked-slots', '/api/blocked-slots/:path*'],
+  matcher: ['/admin', '/admin/:path*', '/api/bookings', '/api/bookings/:path*', '/api/blocked-slots', '/api/blocked-slots/:path*', '/api/owner-sms', '/api/owner-sms/:path*'],
 }

@@ -1,6 +1,11 @@
 import { randomUUID } from 'crypto'
 import { NextRequest, NextResponse } from 'next/server'
-import { calculatePrice, formatPrice, serviceSummary } from '@/lib/pricing'
+import { HOUSE_CALLBACK, POSTCODE_ASK } from '@/lib/ellie-copy'
+import { rememberNotified, wasNotified } from '@/lib/call-memory'
+import { summariseCall } from '@/lib/call-summary'
+import { notifyOwner, ownerBodyForBooking } from '@/lib/owner-notify'
+import { calculatePrice, formatPrice, houseClearancePrice, parseHouseSize, serviceSummary } from '@/lib/pricing'
+import { sendSms as deliverSms } from '@/lib/sms'
 import { demoForced, demoInsertBooking, demoTakenSlots, isSupabaseConfigured } from '@/lib/demo-store'
 import { anonServerClient } from '@/lib/supabase-server'
 import { sendConfirmationEmail } from '@/lib/resend'
@@ -17,12 +22,13 @@ import type { Booking, ServiceCategory, ServiceDetails, TimeSlot } from '@/types
 export const dynamic = 'force-dynamic'
 
 type Args = Record<string, unknown>
+type ToolCtx = { callId?: string; customerNumber?: string }
 interface ToolCall {
   id: string
   function?: { name?: string; arguments?: Args | string }
 }
 
-const CATEGORIES: ServiceCategory[] = ['furniture', 'garden', 'rubble', 'junk', 'appliances']
+const CATEGORIES: ServiceCategory[] = ['furniture', 'garden', 'rubble', 'junk', 'appliances', 'house']
 const LOAD_SIZES = ['small', 'half', 'full'] as const
 
 function shouldUseDemo(): boolean {
@@ -49,8 +55,14 @@ function normaliseKey(v: string): string {
   return v.toLowerCase().trim().replace(/[\s-]+/g, '_').replace(/s$/, '')
 }
 
+function normaliseCategory(v: string): string {
+  const key = v.toLowerCase().trim().replace(/[\s-]+/g, '_')
+  if (key === 'house' || key === 'houses' || key === 'home' || key === 'homes') return 'house'
+  return key.replace(/s$/, '')
+}
+
 function buildServiceDetails(args: Args): ServiceDetails | string {
-  const category = normaliseKey(str(args.category)) as ServiceCategory
+  const category = normaliseCategory(str(args.category)) as ServiceCategory
   const cat = (CATEGORIES as string[]).includes(category)
     ? category
     : (CATEGORIES as string[]).includes(category + 's')
@@ -71,6 +83,14 @@ function buildServiceDetails(args: Args): ServiceDetails | string {
       return 'For furniture, list the items (e.g. sofa, bed, wardrobe, table, chair, mattress, desk) with quantities.'
     }
     return { category: cat, items }
+  }
+
+  if (cat === 'house') {
+    const size = parseHouseSize(str(args.houseSize) || str(args.size))
+    if (!size) {
+      return 'For a house clearance, give houseSize: room, 1_bed, 2_bed or 3_bed. If that price is not set, do not invent one.'
+    }
+    return { category: 'house', houseSize: size }
   }
 
   if (cat === 'appliances') {
@@ -124,17 +144,6 @@ function normaliseSlot(v: string): TimeSlot | null {
   return map[s] ?? null
 }
 
-/** Normalise a UK-ish phone to E.164 (+44…) when possible. */
-function toE164(phone: string): string | null {
-  const digits = phone.replace(/[^\d+]/g, '')
-  if (/^\+[1-9]\d{7,14}$/.test(digits)) return digits
-  const bare = digits.replace(/\D/g, '')
-  if (/^07\d{9}$/.test(bare)) return `+44${bare.slice(1)}`
-  if (/^447\d{9}$/.test(bare)) return `+${bare}`
-  if (/^0\d{9,10}$/.test(bare)) return `+44${bare.slice(1)}`
-  return null
-}
-
 async function takenSlots(date: string): Promise<Set<string>> {
   if (shouldUseDemo()) return demoTakenSlots(date)
   try {
@@ -156,14 +165,17 @@ async function takenSlots(date: string): Promise<Set<string>> {
 async function getPrice(args: Args): Promise<string> {
   const details = buildServiceDetails(args)
   if (typeof details === 'string') throw new Error(details)
+  if (details.category === 'house' && houseClearancePrice(details.houseSize) == null) {
+    return HOUSE_CALLBACK
+  }
   const price = calculatePrice(details)
   return `${serviceSummary(details)}: ${formatPrice(price)} all-in (labour, loading, disposal and VAT included).`
 }
 
 async function checkAvailability(args: Args): Promise<string> {
   const date = str(args.date)
-  if (!isValidDate(date)) throw new Error(`Date must be YYYY-MM-DD. Today in London is ${londonToday()}.`)
-  if (date < londonToday()) throw new Error(`That date is in the past. Today in London is ${londonToday()}.`)
+  if (!isValidDate(date)) throw new Error(`Date must be YYYY-MM-DD. Today in Kent is ${londonToday()}.`)
+  if (date < londonToday()) throw new Error(`That date is in the past. Today in Kent is ${londonToday()}.`)
   const taken = await takenSlots(date)
   const free = TIME_SLOTS.filter((s) => !taken.has(s))
   return free.length
@@ -171,7 +183,7 @@ async function checkAvailability(args: Args): Promise<string> {
     : `No slots left on ${date}. Offer the next day.`
 }
 
-async function createBooking(args: Args): Promise<string> {
+async function createBooking(args: Args, ctx: ToolCtx): Promise<string> {
   const name = str(args.name)
   const phone = str(args.phone)
   const street = str(args.address)
@@ -186,13 +198,19 @@ async function createBooking(args: Args): Promise<string> {
     !date && 'date',
     !slot && 'slot',
   ].filter(Boolean)
+  if (!postcode) {
+    throw new Error(`Missing postcode. Ask: "${POSTCODE_ASK}" Do not confirm the booking without it.`)
+  }
   if (missing.length) throw new Error(`Missing or invalid: ${missing.join(', ')}. Slots are ${TIME_SLOTS.join(', ')}.`)
   if (!isValidDate(date) || date < londonToday()) {
-    throw new Error(`Invalid date. Today in London is ${londonToday()}.`)
+    throw new Error(`Invalid date. Today in Kent is ${londonToday()}.`)
   }
 
   const details = buildServiceDetails(args)
   if (typeof details === 'string') throw new Error(details)
+  if (details.category === 'house' && houseClearancePrice(details.houseSize) == null) {
+    throw new Error(HOUSE_CALLBACK)
+  }
 
   const taken = await takenSlots(date)
   if (taken.has(slot as string)) {
@@ -233,6 +251,17 @@ async function createBooking(args: Args): Promise<string> {
     }
   }
 
+  try {
+    await notifyOwner('booked', ownerBodyForBooking(saved, postcode))
+    rememberNotified([
+      ctx.callId ? `call:${ctx.callId}` : '',
+      `phone:${phone}`,
+      ctx.customerNumber ? `phone:${ctx.customerNumber}` : '',
+    ])
+  } catch (err) {
+    console.error('Owner SMS after booking failed', err)
+  }
+
   const ref = saved.id.slice(0, 8).toUpperCase()
   return `Booked. Reference ${ref}. ${serviceSummary(details)} on ${date}, arrival slot ${slot}, at ${saved.address}. Price ${formatPrice(saved.price)}. Now call send_sms to text the caller a short confirmation with this reference.`
 }
@@ -242,48 +271,25 @@ async function createBooking(args: Args): Promise<string> {
  * Uses Twilio when TWILIO_ACCOUNT_SID / TWILIO_AUTH_TOKEN / TWILIO_FROM_NUMBER are set.
  * In DEMO_MODE or without Twilio creds, logs the body and returns success so demos still work.
  */
-async function sendSms(args: Args): Promise<string> {
+async function sendCallerSms(args: Args): Promise<string> {
   const toRaw = str(args.to) || str(args.phone)
   const message = str(args.message) || str(args.body)
   if (!toRaw) throw new Error('Need a phone number (to) for the SMS.')
   if (!message) throw new Error('Need a message body for the SMS.')
   if (message.length > 320) throw new Error('Keep the SMS under 320 characters.')
 
-  const to = toE164(toRaw) ?? toRaw
-  const sid = process.env.TWILIO_ACCOUNT_SID?.trim()
-  const token = process.env.TWILIO_AUTH_TOKEN?.trim()
-  const from = process.env.TWILIO_FROM_NUMBER?.trim()
-  const demo = shouldUseDemo() || !sid || !token || !from
-
-  if (demo) {
-    console.log('[Ellie SMS DEMO]', { to, from: from || '(no TWILIO_FROM_NUMBER)', message })
-    return `SMS queued (demo). Text would go to ${to}: "${message}"`
+  const result = await deliverSms(toRaw, message, 'caller')
+  if (result.delivery === 'failed') {
+    throw new Error(`${result.detail} Tell the caller the booking is confirmed and you'll text shortly.`)
   }
-
-  const auth = Buffer.from(`${sid}:${token}`).toString('base64')
-  const body = new URLSearchParams({ To: to, From: from!, Body: message })
-  const res = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${sid}/Messages.json`, {
-    method: 'POST',
-    headers: {
-      Authorization: `Basic ${auth}`,
-      'Content-Type': 'application/x-www-form-urlencoded',
-    },
-    body,
-  })
-  const data = (await res.json().catch(() => ({}))) as { sid?: string; message?: string; error_message?: string }
-  if (!res.ok) {
-    throw new Error(
-      `Twilio SMS failed (${res.status}): ${data.message || data.error_message || 'unknown'}. Tell the caller the booking is confirmed and you'll text shortly.`,
-    )
-  }
-  return `SMS sent to ${to} (Twilio ${data.sid ?? 'ok'}).`
+  return result.detail
 }
 
-const HANDLERS: Record<string, (a: Args) => Promise<string>> = {
-  get_price: getPrice,
-  check_availability: checkAvailability,
-  create_booking: createBooking,
-  send_sms: sendSms,
+const HANDLERS: Record<string, (a: Args, ctx: ToolCtx) => Promise<string>> = {
+  get_price: (args) => getPrice(args),
+  check_availability: (args) => checkAvailability(args),
+  create_booking: (args, ctx) => createBooking(args, ctx),
+  send_sms: (args) => sendCallerSms(args),
 }
 
 export async function POST(req: NextRequest) {
@@ -292,7 +298,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
   }
 
-  let body: { message?: { type?: string; toolCallList?: ToolCall[] } }
+  let body: {
+    message?: {
+      type?: string
+      toolCallList?: ToolCall[]
+      call?: { id?: string; customer?: { number?: string } }
+    }
+  }
   try {
     body = await req.json()
   } catch {
@@ -300,9 +312,28 @@ export async function POST(req: NextRequest) {
   }
 
   const message = body.message
-  if (!message || message.type !== 'tool-calls') {
-    // end-of-call-report, status-update etc. are acknowledged and ignored for now.
+  if (!message) return NextResponse.json({ ok: true })
+
+  if (message.type === 'end-of-call-report') {
+    try {
+      const summary = summariseCall(message)
+      if (!wasNotified(summary.keys)) {
+        await notifyOwner(summary.kind, summary.body)
+        rememberNotified(summary.keys)
+      }
+    } catch (err) {
+      console.error('Owner SMS after call failed', err)
+    }
     return NextResponse.json({ ok: true })
+  }
+
+  if (message.type !== 'tool-calls') {
+    return NextResponse.json({ ok: true })
+  }
+
+  const ctx: ToolCtx = {
+    callId: message.call?.id,
+    customerNumber: message.call?.customer?.number,
   }
 
   const results = await Promise.all(
@@ -311,7 +342,7 @@ export async function POST(req: NextRequest) {
       const handler = HANDLERS[name]
       if (!handler) return { toolCallId: call.id, error: `Unknown tool ${name}` }
       try {
-        const result = await handler(parseArgs(call.function?.arguments))
+        const result = await handler(parseArgs(call.function?.arguments), ctx)
         return { toolCallId: call.id, result }
       } catch (err) {
         return { toolCallId: call.id, error: err instanceof Error ? err.message : 'Tool failed' }

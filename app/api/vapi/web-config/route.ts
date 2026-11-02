@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server'
 export const dynamic = 'force-dynamic'
 
 /**
- * Returns only what the browser needs to start a Vapi web call.
+ * Kept for a future browser call. The site no longer shows a Talk to Ellie button.
  * NEVER includes VAPI_API_KEY (private). Public keys are designed for client use.
  */
 export async function GET() {
