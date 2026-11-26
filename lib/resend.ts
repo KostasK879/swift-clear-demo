@@ -53,3 +53,41 @@ export async function sendConfirmationEmail(booking: Booking): Promise<boolean> 
     return false
   }
 }
+
+export async function sendOwnerCallEmail(input: {
+  to: string
+  subject: string
+  text: string
+  html: string
+  idempotencyKey?: string
+}): Promise<{ sent: boolean; id?: string; error?: string }> {
+  const apiKey = process.env.RESEND_API_KEY
+  if (!apiKey) {
+    console.error('Resend: RESEND_API_KEY is missing; owner call email not sent')
+    return { sent: false, error: 'RESEND_API_KEY is missing' }
+  }
+
+  try {
+    const resend = new Resend(apiKey)
+    const { data, error } = await resend.emails.send(
+      {
+        from: process.env.RESEND_FROM || 'Swift Clear <bookings@nodusai.io>',
+        to: input.to,
+        subject: input.subject,
+        text: input.text,
+        html: input.html,
+      },
+      input.idempotencyKey ? { idempotencyKey: input.idempotencyKey } : undefined,
+    )
+    if (error) {
+      const message = error.message || 'Resend rejected the owner call email'
+      console.error('Owner call email failed:', error)
+      return { sent: false, error: message }
+    }
+    return { sent: true, id: data?.id }
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Owner call email failed'
+    console.error('Owner call email error:', err)
+    return { sent: false, error: message }
+  }
+}

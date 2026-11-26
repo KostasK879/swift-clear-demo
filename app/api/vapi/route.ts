@@ -2,6 +2,7 @@ import { randomUUID } from 'crypto'
 import { NextRequest, NextResponse } from 'next/server'
 import { HOUSE_CALLBACK, POSTCODE_ASK } from '@/lib/ellie-copy'
 import { rememberNotified, wasNotified } from '@/lib/call-memory'
+import { deliverOwnerCallReport } from '@/lib/call-report'
 import { summariseCall } from '@/lib/call-summary'
 import { notifyOwner, ownerBodyForBooking } from '@/lib/owner-notify'
 import { calculatePrice, formatPrice, houseClearancePrice, parseHouseSize, serviceSummary } from '@/lib/pricing'
@@ -14,8 +15,10 @@ import type { Booking, ServiceCategory, ServiceDetails, TimeSlot } from '@/types
 
 /**
  * Vapi webhook for the Swift Clear phone receptionist.
- * Handles tool-calls for get_price, check_availability, create_booking and send_sms.
+ * Handles tool-calls for get_price, check_availability, create_booking and send_sms,
+ * and emails the owner a summary on end-of-call-report.
  * Every tool result is returned with HTTP 200 (Vapi ignores non-2xx bodies).
+ * End-of-call reports always return 200, including when email or SMS fails.
  * If VAPI_SECRET is set, the request must carry a matching `x-vapi-secret` header.
  */
 
@@ -323,6 +326,11 @@ export async function POST(req: NextRequest) {
       }
     } catch (err) {
       console.error('Owner SMS after call failed', err)
+    }
+    try {
+      await deliverOwnerCallReport(message)
+    } catch (err) {
+      console.error('Owner call report failed', err)
     }
     return NextResponse.json({ ok: true })
   }
