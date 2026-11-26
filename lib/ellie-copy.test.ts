@@ -4,7 +4,7 @@ import { dirname, join } from 'node:path'
 import test from 'node:test'
 import { fileURLToPath } from 'node:url'
 import { summariseCall } from './call-summary.ts'
-import { isGibberish, reply } from './chatbot.ts'
+import { GREETING, isGibberish, reply } from './chatbot.ts'
 import {
   BEREAVEMENT_LINE,
   bookedOwnerText,
@@ -15,10 +15,24 @@ import {
   POSTCODE_ASK,
   REACT_EXAMPLE,
   UNCLEAR_REPLIES,
+  WEBSITE_GREETING,
+  WEBSITE_TEASER,
 } from './ellie-copy.ts'
 import { publicPhoneNumber } from './site-phone.ts'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
+
+test('website chat opens with a conversation, not a menu', () => {
+  assert.equal(GREETING.text, WEBSITE_GREETING)
+  assert.equal(GREETING.chips, undefined)
+  assert.match(GREETING.text, /I'm Ellie, the AI assistant/)
+  assert.match(GREETING.text, /What are you looking to get cleared\?/)
+  assert.equal(reply('hello').text, WEBSITE_GREETING)
+  assert.equal(reply('hello').chips, undefined)
+  assert.equal(WEBSITE_TEASER.includes('10 seconds'), false)
+  assert.equal(WEBSITE_TEASER.includes('quick price'), false)
+  assert.match(WEBSITE_TEASER, /^Hi, it's Ellie/)
+})
 
 test('gibberish uses the approved line', () => {
   assert.equal(isGibberish('asdfghjkl'), true)

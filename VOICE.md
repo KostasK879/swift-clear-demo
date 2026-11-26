@@ -64,7 +64,7 @@ You **cannot** hear Ellie from the website alone — Vapi needs an API key and a
    ```powershell
    npm run dev -- -p 3100
    ```
-2. Open **http://localhost:3100** — landing page, quote wizard, amber Clearbot bubble (bottom-right).
+2. Open **http://localhost:3100** — landing page, quote wizard, Ellie chat (bottom-right).
 3. Admin (if `ADMIN_PASSWORD` is set): **http://localhost:3100/admin**
 
 ### Optional: smoke-test `send_sms` in DEMO_MODE
@@ -108,7 +108,7 @@ Bookings then appear in `/admin`.
 
 ## On the website
 
-There is no Talk to Ellie button. Ellie answers the phone number in `NEXT_PUBLIC_PHONE_NUMBER`. The amber bubble is the website chat.
+There is no Talk to Ellie button. Ellie answers the phone number in `NEXT_PUBLIC_PHONE_NUMBER`. The photo button in the corner is the website chat.
 
 To hear her before the UK number is connected, open the assistant in the Vapi dashboard and use **Talk to Assistant** (that still needs a public `SERVER_URL`).
 

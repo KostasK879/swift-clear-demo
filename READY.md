@@ -24,7 +24,7 @@ If the tunnel URL stops working, restart it:
 
 Ellie is on the phone, not a button on the website. Set `NEXT_PUBLIC_PHONE_NUMBER` to the real Twilio/Vapi UK number (do not use 020 7946 0000). Customers ring that number.
 
-The amber chat bubble is Ellie in writing. Set `AI_GATEWAY_API_KEY` or `OPENAI_API_KEY` for the model. With neither key, the keyword replies are used.
+The photo button in the corner is Ellie in writing. Set `AI_GATEWAY_API_KEY` or `OPENAI_API_KEY` for the model. With neither key, the keyword replies are used.
 
 After each call or booking, a summary is logged on `/admin`. Set `OWNER_SMS_NUMBER` (and the Twilio keys) to text it to your mobile.
 

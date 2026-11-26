@@ -3,6 +3,13 @@
  * Sequencer wires these strings into chat, the phone prompt, and owner texts.
  */
 
+/** Website chat opening. Matches the phone greeting, and says she is an AI. */
+export const WEBSITE_GREETING =
+  "Hi, thanks for getting in touch with Swift Clear, I'm Ellie, the AI assistant. What are you looking to get cleared?"
+
+/** Delayed nudge beside the closed chat. A person, not a timer. */
+export const WEBSITE_TEASER = "Hi, it's Ellie. What are you looking to get cleared?"
+
 export const GIBBERISH_REPLY =
   'Ha, I think the keyboard got away from you there. What are you looking to get rid of?'
 

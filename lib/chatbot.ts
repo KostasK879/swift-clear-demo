@@ -14,14 +14,14 @@ import {
   HOUSE_CALLBACK,
   nextUnclearIndex,
   UNCLEAR_REPLIES,
+  WEBSITE_GREETING,
 } from './ellie-copy'
 import { publicPhoneNumber } from './site-phone'
 
 export type Reply = { text: string; chips?: string[]; link?: { href: string; label: string }; unclearIndex?: number }
 
 export const GREETING: Reply = {
-  text: "Hi, I'm Ellie. I'm the AI assistant on the Swift Clear website, not a real person, and I'm happy to help. I can price a collection, check availability or help you book. What do you need cleared?",
-  chips: ['Get a price', 'Same-day collection?', 'What do you take?', 'Book a collection'],
+  text: WEBSITE_GREETING,
 }
 
 const QUOTE = { href: '/quote', label: 'Get my exact quote →' }

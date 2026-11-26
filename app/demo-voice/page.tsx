@@ -67,7 +67,7 @@ export default function DemoVoicePage() {
             2. Website chat
           </h2>
           <p className="text-stone-700 leading-relaxed">
-            The amber bubble is Ellie in writing. With <code className="bg-stone-100 px-1 rounded">AI_GATEWAY_API_KEY</code> or{' '}
+            The photo in the corner is Ellie in writing. With <code className="bg-stone-100 px-1 rounded">AI_GATEWAY_API_KEY</code> or{' '}
             <code className="bg-stone-100 px-1 rounded">OPENAI_API_KEY</code> she uses a real model. With neither key she falls back to the keyword replies.
           </p>
         </section>
