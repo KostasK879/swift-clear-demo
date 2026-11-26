@@ -1,17 +1,18 @@
 import type { ReactNode } from 'react'
 import Link from 'next/link'
-import { phoneDisplay, phoneTelHref } from '@/lib/site-phone'
+import { ELLIE_CALL_LABEL, phoneDisplay, phoneTelHref } from '@/lib/site-phone'
+
+function PhoneIcon({ size = 16 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.82a19.79 19.79 0 01-3.07-8.67A2 2 0 012 1h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L6.09 8.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z" />
+    </svg>
+  )
+}
 
 function PhoneLink({ className, children }: { className?: string; children?: ReactNode }) {
   const href = phoneTelHref()
   const content = children ?? phoneDisplay()
-  if (!href) {
-    return (
-      <span className={className} title="Set NEXT_PUBLIC_PHONE_NUMBER to a real Twilio or Vapi UK number.">
-        {content}
-      </span>
-    )
-  }
   return <a href={href} className={className}>{content}</a>
 }
 
@@ -45,11 +46,21 @@ function Nav() {
         <nav className="hidden md:flex items-center gap-8">
           <a href="#services" className="text-sm font-medium text-white/70 hover:text-white transition-colors">Services</a>
           <a href="#how-it-works" className="text-sm font-medium text-white/70 hover:text-white transition-colors">How It Works</a>
-          <PhoneLink className="text-sm font-medium text-white/70 hover:text-white transition-colors">{phoneDisplay()}</PhoneLink>
+          <PhoneLink className="inline-flex items-center gap-2 text-sm font-semibold text-white whitespace-nowrap hover:text-white/80 transition-colors">
+            <PhoneIcon size={14} />
+            <span>{phoneDisplay()}</span>
+          </PhoneLink>
           <Link href="/quote" className="btn-amber text-sm px-5 py-2.5" style={{ padding: '10px 20px', fontSize: '0.875rem' }}>Get a Quote</Link>
         </nav>
-        <Link href="/quote" className="md:hidden btn-amber" style={{ padding: '8px 16px', fontSize: '0.875rem' }}>Quote</Link>
+        <Link href="/quote" className="md:hidden btn-amber shrink-0" style={{ padding: '8px 16px', fontSize: '0.875rem' }}>Quote</Link>
       </div>
+      <PhoneLink className="md:hidden flex items-center justify-center gap-2 px-4 py-2.5 text-center text-white border-t border-white/15 min-h-[44px]">
+        <PhoneIcon size={16} />
+        <span className="leading-tight">
+          <span className="block text-[13px] font-semibold">{ELLIE_CALL_LABEL}</span>
+          <span className="block text-sm font-bold tracking-wide">{phoneDisplay()}</span>
+        </span>
+      </PhoneLink>
     </header>
   )
 }
@@ -63,7 +74,7 @@ function Hero() {
         <div className="absolute" style={{ width: '400px', height: '400px', bottom: '-100px', left: '10%', background: 'radial-gradient(circle, rgba(224,139,32,0.12) 0%, transparent 70%)', borderRadius: '50%' }} />
       </div>
 
-      <div className="relative max-w-6xl mx-auto px-4 sm:px-6 py-16 sm:py-24 md:py-32 flex flex-col md:flex-row items-center gap-10 md:gap-12" style={{ zIndex: 2 }}>
+      <div className="relative max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-20 md:py-32 flex flex-col md:flex-row items-center gap-8 md:gap-12" style={{ zIndex: 2 }}>
         <div className="flex-1 text-center md:text-left">
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold mb-6 animate-fade-up" style={{ background: 'rgba(224,139,32,0.2)', color: 'var(--amber)', border: '1px solid rgba(224,139,32,0.3)' }}>
             <span className="w-1.5 h-1.5 rounded-full bg-amber-400 inline-block animate-pulse" />
@@ -78,12 +89,15 @@ function Hero() {
             Furniture, garden waste, construction rubble, junk, and appliances — cleared fast, responsibly, and at a fair price.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center md:justify-start w-full sm:w-auto animate-fade-up delay-300">
-            <Link href="/quote" className="btn-amber w-full sm:w-auto">
+            <Link href="/quote" className="btn-amber w-full sm:w-auto order-2 sm:order-1">
               Get a Free Quote →
             </Link>
-            <PhoneLink className="btn-outline w-full sm:w-auto">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.82a19.79 19.79 0 01-3.07-8.67A2 2 0 012 1h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L6.09 8.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z" /></svg>
-              {phoneDisplay()}
+            <PhoneLink className="btn-outline w-full sm:w-auto h-auto order-1 sm:order-2">
+              <PhoneIcon size={18} />
+              <span className="flex flex-col items-center sm:items-start leading-tight text-center sm:text-left min-w-0">
+                <span className="text-base font-bold tracking-wide whitespace-nowrap">{phoneDisplay()}</span>
+                <span className="text-[13px] sm:text-sm font-medium mt-0.5">{ELLIE_CALL_LABEL}</span>
+              </span>
             </PhoneLink>
           </div>
           <div className="flex flex-wrap gap-6 mt-10 justify-center md:justify-start animate-fade-up delay-400">
@@ -348,7 +362,12 @@ function Footer() {
         <div>
           <h4 className="text-white font-semibold mb-4 text-sm">Contact</h4>
           <ul className="space-y-2 text-sm">
-            <li>📞 <PhoneLink className="hover:text-white transition-colors">{phoneDisplay()}</PhoneLink></li>
+            <li>
+              <PhoneLink className="hover:text-white transition-colors">
+                <span className="block">{ELLIE_CALL_LABEL}</span>
+                <span className="block mt-1 text-white">📞 {phoneDisplay()}</span>
+              </PhoneLink>
+            </li>
             <li>✉ <a href="mailto:info@swiftclear.co.uk" className="hover:text-white transition-colors">info@swiftclear.co.uk</a></li>
             <li>📍 Kent, UK</li>
             <li className="pt-2"><Link href="/admin" className="text-xs opacity-40 hover:opacity-70 transition-opacity">Admin</Link></li>

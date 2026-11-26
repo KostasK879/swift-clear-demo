@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
-import { phoneDisplay, phoneTelHref } from '@/lib/site-phone'
+import { ELLIE_CALL_LABEL, phoneDisplay, phoneTelHref } from '@/lib/site-phone'
 
 export const metadata: Metadata = {
   title: 'Call Ellie | Swift Clear',
@@ -44,17 +44,12 @@ export default function DemoVoicePage() {
           <h2 className="font-display text-xl font-bold mb-3" style={{ color: 'var(--green)' }}>
             1. Ring the number on the site
           </h2>
-          {href ? (
-            <p className="text-stone-700 mb-3">
-              <a href={href} className="underline font-semibold text-xl" style={{ color: 'var(--green)' }}>{number}</a>
-            </p>
-          ) : (
-            <p className="text-stone-700 mb-3 leading-relaxed">
-              The site is showing <strong>{number}</strong>. Put a real Twilio or Vapi UK number in{' '}
-              <code className="bg-stone-100 px-1 rounded">NEXT_PUBLIC_PHONE_NUMBER</code>.{' '}
-              020 7946 0000 is an Ofcom drama number and cannot take calls.
-            </p>
-          )}
+          <p className="text-stone-700 mb-3">
+            <a href={href} className="underline font-semibold" style={{ color: 'var(--green)' }}>
+              <span className="block text-base">{ELLIE_CALL_LABEL}</span>
+              <span className="block text-xl mt-1">{number}</span>
+            </a>
+          </p>
           <p className="text-sm text-stone-600 leading-relaxed">
             Import that number into Vapi and set the inbound assistant to Swift Clear Receptionist.
             After you change <code className="bg-stone-100 px-1 rounded">vapi/assistant.json</code>, run{' '}
